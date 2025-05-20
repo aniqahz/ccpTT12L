@@ -40,7 +40,7 @@ int main()
 
     getline(infile, line);
     sscanf(line.c_str(), "M by N : %d %d", &row, &col);
-    cout << "rows: " << row << ", col: " << col << endl;
+    //cout << "rows: " << row << ", col: " << col << endl;
 
     vector<vector<char>> field(row, vector<char>(col, '.'));
 
@@ -56,7 +56,7 @@ int main()
         int x = -1, y = -1;
 
         getline(infile, line);
-        cout << "robot line " << i+1 << ": " << line << endl;
+        //cout << "robot line " << i+1 << ": " << line << endl;
 
         size_t found = line.find("random random");
         if (found != string::npos)
@@ -104,7 +104,7 @@ int main()
         }
 
         char sym = rName[0];
-        cout << rName << " is placed at (" << x << "," << y << ")" << endl;
+        //cout << rName << " is placed at (" << x << "," << y << ")" << endl;
         robotPos(field, x, y, sym);
     }
 
