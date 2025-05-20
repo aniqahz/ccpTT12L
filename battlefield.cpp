@@ -2,10 +2,11 @@
 #include<vector>
 #include<string>
 #include<fstream>
-#include<cstdio> //sscanf = word parsing
+#include<cstdio>
+#include<ctime>    // for time()
+#include<cstdlib>  // for rand()
 
 using namespace std;
-
 
 void displayField(const vector<vector<char>>& field)
 {
@@ -13,137 +14,101 @@ void displayField(const vector<vector<char>>& field)
     {
         for(char cell : row)
             cout << cell;
-    
-        cout<<endl;
+        cout << endl;
     }
 }
 
 void robotPos(vector<vector<char>>& field, int x, int y, char sym)
 {
-    if(x >= 0 && x < field.size() && y>= 0 && y< field[0].size())
-        field[x][y]=sym;
+    if(x >= 0 && x < field.size() && y >= 0 && y < field[0].size())
+        field[x][y] = sym;
 }
 
 int main()
 {
     srand(static_cast<unsigned int>(time(nullptr)));
-    int row=0, col=0, steps=0, numRobot=0;
+
+    int row = 0, col = 0, steps = 0, numRobot = 0;
     string line;
-    
+
     ifstream infile("Robot.txt");
     if (!infile)
     {
-        cout << "Error" <<endl;
+        cout << "Error opening file." << endl;
         return 1;
     }
 
-    getline(infile,line); //set the battlefield dimension width and height
+    getline(infile, line);
     sscanf(line.c_str(), "M by N : %d %d", &row, &col);
-    //cout<<"rows: "<<row << ", col: "<< col <<endl; 
+    cout << "rows: " << row << ", col: " << col << endl;
 
-    vector<vector<char>> field(row, vector<char>(col,'.'));
+    vector<vector<char>> field(row, vector<char>(col, '.'));
 
-    getline(infile,line);
-    sscanf(line.c_str(), "steps: %d", &steps);// pass steps value to steps var
-    //cout<<"steps: "<<steps<<endl;
+    getline(infile, line);
+    sscanf(line.c_str(), "steps: %d", &steps);
 
-    getline(infile,line);
-    sscanf(line.c_str(),"robots: %d", &numRobot); //pass robot position to numRobot var
-    //cout<<"read robots.. "<<endl;
+    getline(infile, line);
+    sscanf(line.c_str(), "robots: %d", &numRobot);
 
-    for(int i=0; i<numRobot; ++i) //identify robot type and its  position
+    for(int i = 0; i < numRobot; ++i)
     {
-        if(!getline(infile,line))
-        {
-            cout<<"failed to read"<< i+1<<endl;
-            break;
-        }
-        cout<<"robot line "<<i+1<< ": "<<line<<endl;
-
         string rType, rName;
-        
-        int x=-1, y=-1;
-        getline(infile,line);
+        int x = -1, y = -1;
 
-        char type[10], name[10];
-        int ret = sscanf(line.c_str(),"%s %s random random", type, name);
-        cout<<"return: "<<ret<<endl;
+        getline(infile, line);
+        cout << "robot line " << i+1 << ": " << line << endl;
 
-        rType = type;
-        rName = name;
-
-        size_t pos = line.find(rName);
-        string after = line.substr(pos+rName.length());
-        after.erase(0,after.find_first_not_of(' '));
-
-        if(after=="random random") //for random posiitoned robot 
+        size_t found = line.find("random random");
+        if (found != string::npos)
         {
-            cout<<rName<<" is positioned"<<endl;
-            do
-            {
-                x=rand() % row;
+            // Handle random position
+            char type[20], name[20];
+            sscanf(line.c_str(), "%s %s", type, name);
+            rType = type;
+            rName = name;
+
+            do {
+                x = rand() % row;
                 y = rand() % col;
             } while (field[x][y] != '.');
         }
-        else //for fixed position robot
+        else
         {
-            int nx,ny;
-            int read = sscanf(line.c_str(), "%*s %*s %d %d",&nx, &ny );
-            if (read==2)
+            // Handle fixed position
+            char type[20], name[20];
+            int nx, ny;
+            int matched = sscanf(line.c_str(), "%s %s %d %d", type, name, &nx, &ny);
+            if (matched == 4)
             {
-                x=nx;
-                y=ny;
+                rType = type;
+                rName = name;
+                x = nx;
+                y = ny;
+
+                if (x < 0 || x >= row || y < 0 || y >= col)
+                {
+                    cout << "Invalid fixed position for " << rName << endl;
+                    continue;
+                }
+                if (field[x][y] != '.')
+                {
+                    cout << "Position (" << x << "," << y << ") is occupied" << endl;
+                    continue;
+                }
             }
             else
             {
-                cout<<"invalid format"<< rName<<endl;
+                cout << "Invalid format for robot line: " << line << endl;
                 continue;
             }
-
-            //validating coordinates
-            if(x<0 || x>=row || y<0 || y>=col)
-            {
-                cout<<"error for "<<rName<<endl;
-                continue;
-            }
-            if(field[x][y] != '.')
-            {
-                cout<<x<<" "<<y<<" is occupied<<"<<endl;
-                continue;
-            }
-        
         }
-        /*else
-        {
-            char type[10], name[10]; //temp var to store robot name and type
-            sscanf(line.c_str(), "%*s %s %d %d",type, name, &x, &y);
-            rType=type;
-            rName=name;
-        }
-
-        //error handling
-        if(x>=0 && x<row && y>=0 && y<col)
-        {
-            if(field[x][y] !='.')
-            {
-                cout<<"Warning: "<<x<<" "<<y<<" is occupied";
-                continue;
-            }
-            else
-            {
-                cout<<"invalid fixed position for "<<rName;
-                continue;
-            }
-        }*/
 
         char sym = rName[0];
-        cout<<rName<< sym<<" is placed at "<<x<<" "<<y<<endl;
+        cout << rName << " is placed at (" << x << "," << y << ")" << endl;
         robotPos(field, x, y, sym);
     }
 
     infile.close();
-
-    //cout<< row << col <<endl;
     displayField(field);
 
     return 0;
