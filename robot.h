@@ -134,7 +134,7 @@ public:
       }
     }
 
-    if (newX>= 0 && newX<field.size()&& newY>=0 && newY<field[0].size()){
+    if (newX>= 0 && newX<field.size() && newY>=0 && newY<field[0].size()){
       if (field[newX][newY] == '.'){
         cout<<"Coast is clear!"<<endl;
       }
@@ -149,10 +149,11 @@ public:
   //FIRE MECHANICS++++++++++++++++++++++++++++++++++++++++++++
     void fire(int dx, int dy, const vector<vector<char>>&field) override{
 
-      if (PosX==0 && PosY==0 && PosX==dx && PosY==dy){ //prevents suicide wow #mentalawareness month
+      if (PosX==0 && PosY==0 || PosX==dx && PosY==dy){ //prevents suicide wow #mentalawareness month
         cout<<"Cannot fire from the origin!"<<endl;
         return;
       }
+
       for (int dx=-1; dx<=1; dx++){
         for (int dy=-1;dy<=1;dy++){
         int targetX= PosX+dx;
@@ -208,5 +209,35 @@ class jumpBot : public movingRobot, public thinkingRobot{
   int jumps; //max 3 jumps/match
 
   public : 
-  jumpBot(string name, )
-}; 
+  jumpBot(string name, const vector<vector<char>>&field ): baseRobot(0,0),movingRobot(0,0), thinkingRobot(0,0), name(name), jumps(3) {
+    robotType = "JumpBot"; //set the robot type
+    
+  };
+
+  void jump(int newX, int newY, const vector<vector<char>>& field) {
+   if (jumps>0){
+    if (newX>=0 && newX<field.size()&& newY>=0 && newY<field[0].size()){
+      PosX=newX;
+      PosY=newY;
+      jumps--;
+      cout<<"JumpBot spawned at ("<<PosX<<","<<PosY<<")"<<endl;
+    }
+    else{
+      cout<<"Out of bounds! Cannot jump!"<<endl;
+    };
+   };};
+
+     void think(const vector<vector<char>>& field) override {
+    if (jumps >0){
+      cout<<"JumpBot is thinking..."<<endl;
+      int newX = rand() % field.size();
+      int newY = rand() % field[0].size();
+      jump(newX,newY, field);
+    }
+    else{
+      cout<<"JumpBot has no jumps left!"<<endl;
+    };
+
+  };
+};
+
