@@ -1,4 +1,5 @@
 #include "battlefield.h"
+#include<iostream>
 
 using namespace std;
 
@@ -16,18 +17,21 @@ int main()
         return 1;
     }
 
+    if(!config(infile, row,col,steps))
+    {
+        cout<<"invalid config"<<endl;
+        return 1;
+    }
+
     vector<vector<char>> field(row, vector<char>(col, '.'));
 
-    int numRobot;
     string line;
-    
-    //getline(infile, line); // M by N
-    //sscanf(line.c_str(), "M by N : %d %d", &row, &col);
-
     getline(infile, line); // robots
     sscanf(line.c_str(), "robots: %d", &numRobot);
 
-    robotPos(infile,outfile,field, numRobot);
+    robotPos(infile, outfile, field, numRobot);
+    displayField(field);
+
     simulation(outfile, field, steps);
 
     infile.close();

@@ -1,7 +1,5 @@
 #include "battlefield.h"
 
-using namespace std;
-
 void displayField(const vector<vector<char>>& field)
 {
     for(const auto& row : field)
@@ -21,17 +19,20 @@ void log(ostream& terminal, ofstream& file, const string& output)
 bool config(ifstream& infile, int& row, int& col, int& steps)
 {
     string line;
-    if(!getline(infile,line))
+    if(getline(infile,line))
     {
-        return false;
         sscanf(line.c_str(), "M by N : %d %d", &row, &col);
     }
-
-    if(!getline(infile, line))
-    {
+    else 
         return false;
+
+
+    if(getline(infile, line))
+    {
         sscanf(line.c_str(), "steps: %d", &steps);
     }
+    else
+        return false;
 
     return true;
 }
@@ -41,59 +42,63 @@ void robotPos(ifstream& infile, ofstream& outfile,vector<vector<char>>& field, i
     string line;
     for(int i=0; i<numRobot; ++i)
     {
-        string rType, rName;
+        string rType, rName, posX, posY;
         int x=-1, y=-1;
 
         if(!getline(infile,line))
         {
+            cout<<"error reading"<<endl;
             break;
         }
 
-        char type[10], name[10];
-        rType = type;
-        rName = name;
+        stringstream ss(line);
+        ss>> rType>>rName>> posX>>posY;
 
-        size_t pos = line.find(rName);
-        string after = line.substr(pos + rName.length());
-        after.erase(0,after.find_first_not_of(' '));
-
-        if (after == "random random")
+        if (posX == "random" && posY == "random")
         {
+            if(field.empty() || field[0].empty())
+            {
+                cout<<"field size not initialised"<<endl;
+                return;
+            }
+
             do
             {
                 x = rand() % field.size();
                 y= rand() % field[0].size();
 
             }
-            while (field[x][y] != '.');}
+            while (field[x][y] != '.');
+        }
         else
         {
-            int nx, ny;
-            int read = sscanf(after.c_str(), "%d %d", &nx, &ny);
-            if(read !=2)
+            try
             {
-                cout<<"invalid position for "<<rName<<endl;
-                outfile<<"invalid position for "<<rName<<endl;
+                x = stoi(posX);
+                y = stoi(posY);
+            }
+            catch(...) //catch all types
+            {
+                cout<<"invalid format for "<<rName<<endl;
+                outfile<<"invalid format for "<<rName<<endl;
                 continue;
             }
-
-            x=nx;
-            y=ny;
-
-            if(x<0 || x>= field.size() || y<0 || y>= field[0].size())
-            {
-                cout<<"the position is out of bond"<<endl;
-                outfile<<"the position is out of bond"<<endl;
-                continue;
-            }
-
-            if(field[x][y] != '.')
-            {
-                cout<<"position is oocupied"<<endl;
-                outfile<<"position is oocupied"<<endl;   
-                continue;         
-            }
+            
         }
+        if(x<0 || x>= field.size() || y<0 || y>= field[0].size())
+        {
+            cout<<"the position is out of bond"<<endl;
+            outfile<<"the position is out of bond"<<endl;
+            continue;
+        }
+
+        if(field[x][y] != '.')
+        {
+            cout<<"position is oocupied"<<endl;
+            outfile<<"position is oocupied"<<endl;   
+            continue;         
+        }
+
         char sym = rName[0];
         field[x][y] = sym;
 
@@ -106,7 +111,7 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps)
 {
     for(int round=0; round<steps; ++round)
     {
-        string turn = "Turn" + to_string(round+1) + "/" + to_string(steps);
+        string turn = "Turn " + to_string(round+1) + "/" + to_string(steps);
         log(cout, outfile, turn);
 
         for(const auto& row : field)
