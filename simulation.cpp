@@ -7,7 +7,6 @@ int main()
     srand(static_cast<unsigned int>(time(nullptr)));
 
     int row = 0, col = 0, steps = 0, numRobot = 0;
-    string line;
 
     ifstream infile("Robot.txt");
     ofstream outfile("output.txt");
@@ -17,17 +16,10 @@ int main()
         return 1;
     }
 
-    getline(infile, line); // M by N
-    sscanf(line.c_str(), "M by N : %d %d", &row, &col);
-    cout << "rows: " << row << ", col: " << col << endl;
-
     vector<vector<char>> field(row, vector<char>(col, '.'));
 
-    getline(infile, line); // steps
+    /*getline(infile, line); // steps
     sscanf(line.c_str(), "steps: %d", &steps);
-
-    getline(infile, line); // robots
-    sscanf(line.c_str(), "robots: %d", &numRobot);
 
     for (int i = 0; i < numRobot; ++i)
     {
@@ -89,22 +81,22 @@ int main()
         char sym = rName[0];
         cout << rName << " (" << sym << ") is placed at (" << x << "," << y << ")" << endl;
         robotPos(field, x, y, sym);
-    }
+    }*/
+
+    int numRobot;
+    string line;
+    
+    //getline(infile, line); // M by N
+    //sscanf(line.c_str(), "M by N : %d %d", &row, &col);
+
+    getline(infile, line); // robots
+    sscanf(line.c_str(), "robots: %d", &numRobot);
+
+    robotPos(infile,outfile,field,numRobot);
+    simulation(outfile, field, steps);
 
     infile.close();
     outfile.close();
-
-    // === Simulation Loop ===
-    for (int step = 0; step < steps; ++step)
-    {
-        cout << "\nTurn " << step + 1 << "/" << steps << endl;
-        displayField(field);
-
-        // Placeholder: Robot actions would be added here in the future
-
-        // Optional: delay for better visualization
-        this_thread::sleep_for(chrono::milliseconds(500));
-    }
 
     return 0;
 }
