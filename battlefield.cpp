@@ -1,10 +1,4 @@
-#include<iostream>
-#include<vector>
-#include<string>
-#include<fstream>
-#include<cstdio>
-#include<ctime>    // for time()
-#include<cstdlib>  // for rand()
+#include "battlefield.h"
 
 using namespace std;
 
@@ -18,98 +12,48 @@ void displayField(const vector<vector<char>>& field)
     }
 }
 
+void log(ostream& terminal, ofstream& file, const string& output)
+{
+    terminal << output <<endl;
+    file << output <<endl;
+}
+
+bool config(ifstream& infile, int& row, int& col, int& steps)
+{
+    string line;
+    if(!getline(infile,line))
+    {
+        return false;
+        sscanf(line.c_str(), "M by N : %d %d", &row, &col);
+    }
+
+    if(!getline(infile, line))
+    {
+        return false;
+        sscanf(line.c_str(), "steps: %d", &steps);
+    }
+
+    return true;
+}
+
 void robotPos(vector<vector<char>>& field, int x, int y, char sym)
 {
     if(x >= 0 && x < field.size() && y >= 0 && y < field[0].size())
         field[x][y] = sym;
 }
 
-int main()
+void simulation(ofstream& outfile, vector<vector<char>>& field, int steps)
 {
-    srand(static_cast<unsigned int>(time(nullptr)));
-
-    int row = 0, col = 0, steps = 0, numRobot = 0;
-    string line;
-
-    ifstream infile("Robot.txt");
-    if (!infile)
+    for(int round=0; round<steps; ++round)
     {
-        cout << "Error opening file." << endl;
-        return 1;
-    }
+        string turn = "Turn" + to_string(round+1) + "/" + to_string(steps);
+        log(cout, outfile, turn);
 
-    getline(infile, line);
-    sscanf(line.c_str(), "M by N : %d %d", &row, &col);
-    //cout << "rows: " << row << ", col: " << col << endl;
-
-    vector<vector<char>> field(row, vector<char>(col, '.'));
-
-    getline(infile, line);
-    sscanf(line.c_str(), "steps: %d", &steps);
-
-    getline(infile, line);
-    sscanf(line.c_str(), "robots: %d", &numRobot);
-
-    for(int i = 0; i < numRobot; ++i)
-    {
-        string rType, rName;
-        int x = -1, y = -1;
-
-        getline(infile, line);
-        //cout << "robot line " << i+1 << ": " << line << endl;
-
-        size_t found = line.find("random random");
-        if (found != string::npos)
+        for(const auto& row : field)
         {
-            // Handle random position
-            char type[20], name[20];
-            sscanf(line.c_str(), "%s %s", type, name);
-            rType = type;
-            rName = name;
-
-            do {
-                x = rand() % row;
-                y = rand() % col;
-            } while (field[x][y] != '.');
+            string Str(row.begin(), row.end());
+            log(cout, outfile, Str);
         }
-        else
-        {
-            // Handle fixed position
-            char type[20], name[20];
-            int nx, ny;
-            int matched = sscanf(line.c_str(), "%s %s %d %d", type, name, &nx, &ny);
-            if (matched == 4)
-            {
-                rType = type;
-                rName = name;
-                x = nx;
-                y = ny;
-
-                if (x < 0 || x >= row || y < 0 || y >= col)
-                {
-                    cout << "Invalid fixed position for " << rName << endl;
-                    continue;
-                }
-                if (field[x][y] != '.')
-                {
-                    cout << "Position (" << x << "," << y << ") is occupied" << endl;
-                    continue;
-                }
-            }
-            else
-            {
-                cout << "Invalid format for robot line: " << line << endl;
-                continue;
-            }
-        }
-
-        char sym = rName[0];
-        //cout << rName << " is placed at (" << x << "," << y << ")" << endl;
-        robotPos(field, x, y, sym);
+        this_thread::sleep_for(chrono::milliseconds(500)); //pause before next round/step
     }
-
-    infile.close();
-    displayField(field);
-
-    return 0;
 }

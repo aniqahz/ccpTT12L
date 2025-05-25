@@ -1,36 +1,6 @@
-#include <iostream>
-#include <vector> //dynamic 2D array
-#include <string>
-#include <fstream> //read from file and write output to file
-#include <cstdio>   // for sscanf
-#include <cstdlib>  // for random position generator (rand)
-#include <ctime>    // for time
-#include <thread>   // for sleep
-#include <chrono>
+#include "battlefield.h"
 
 using namespace std;
-
-void displayField(const vector<vector<char>>& field) //2D vector
-{
-    for (const auto& row : field)
-    {
-        for (char cell : row)
-            cout << cell;
-        cout << endl;
-    }
-}
-
-void log(ostream& terminal, ofstream& file, const string& output)
-{
-    terminal << output <<endl;
-    file << output <<endl;
-}
-
-void robotPos(vector<vector<char>>& field, int x, int y, char sym)
-{
-    if (x >= 0 && x < field.size() && y >= 0 && y < field[0].size())
-        field[x][y] = sym;
-}
 
 int main()
 {
