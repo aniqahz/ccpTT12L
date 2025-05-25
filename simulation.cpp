@@ -1,16 +1,16 @@
 #include <iostream>
-#include <vector>
+#include <vector> //dynamic 2D array
 #include <string>
-#include <fstream>
+#include <fstream> //read from file and write output to file
 #include <cstdio>   // for sscanf
-#include <cstdlib>  // for rand, srand
+#include <cstdlib>  // for random position generator (rand)
 #include <ctime>    // for time
 #include <thread>   // for sleep
 #include <chrono>
 
 using namespace std;
 
-void displayField(const vector<vector<char>>& field)
+void displayField(const vector<vector<char>>& field) //2D vector
 {
     for (const auto& row : field)
     {
@@ -18,6 +18,12 @@ void displayField(const vector<vector<char>>& field)
             cout << cell;
         cout << endl;
     }
+}
+
+void log(ostream& terminal, ofstream& file, const string& output)
+{
+    terminal << output <<endl;
+    file << output <<endl;
 }
 
 void robotPos(vector<vector<char>>& field, int x, int y, char sym)
@@ -34,7 +40,8 @@ int main()
     string line;
 
     ifstream infile("Robot.txt");
-    if (!infile)
+    ofstream outfile("output.txt");
+    if (!infile || !outfile)
     {
         cout << "Error opening file" << endl;
         return 1;
@@ -115,6 +122,7 @@ int main()
     }
 
     infile.close();
+    outfile.close();
 
     // === Simulation Loop ===
     for (int step = 0; step < steps; ++step)
