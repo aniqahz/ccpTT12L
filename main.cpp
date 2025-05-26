@@ -1,4 +1,5 @@
 #include "battlefield.h"
+#include "robot.h"
 #include<iostream>
 
 using namespace std;
