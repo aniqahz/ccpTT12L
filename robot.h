@@ -18,12 +18,9 @@
     public:
     baseRobot(){};
     baseRobot(int x, int y) :PosX(x), PosY(y), isAlive(true), remainingLives(3) {}
-    
     pair<int,int> getPosition() const {return {PosX,PosY};}
-
-      void setPosition(int x,int y)
-      {PosX=x;PosY=y; }
-
+    void setPosition(int x,int y)
+    {PosX=x;PosY=y; }
      bool getAliveStatus() const { return isAlive; }
      string getRobotType() const { return robotType; }
     
@@ -203,14 +200,15 @@ public:
 
 
 //JUMP BOT-------------------------
-class jumpBot : public movingRobot, public thinkingRobot{
+class jumpBot : public  GenericRobot {
   private :
-  string name;
   int jumps; //max 3 jumps/match
 
+
   public : 
-  jumpBot(string name, const vector<vector<char>>&field ): baseRobot(0,0),movingRobot(0,0), thinkingRobot(0,0), name(name), jumps(3) {
-    robotType = "JumpBot"; //set the robot type
+  jumpBot(string name, const vector<vector<char>>&field ):GenericRobot(name, 0,0), jumps(3) {
+    robotType = "JumpBot"; 
+    bool hasMovingUpgrade=true;//set the robot type
     
   };
 
@@ -236,6 +234,7 @@ class jumpBot : public movingRobot, public thinkingRobot{
     }
     else{
       cout<<"JumpBot has no jumps left!"<<endl;
+      GenericRobot::think(field); //fallback to generic thinking
     };
 
   };
