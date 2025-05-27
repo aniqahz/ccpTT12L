@@ -33,9 +33,9 @@ int main()
 
     string line;
     getline(infile, line); // robots
-    sscanf(line.c_str(), "robots: %d", &robots);
+    sscanf(line.c_str(), "robots: %d", &numRobot);
 
-    robotPos(infile, outfile, field, robots);
+    robotPos(infile, outfile, field, numRobot, robots);
     displayField(field);
     setRobots(robots, spawnTurn, maxSteps);
     simulation(outfile, field, robots, spawnTurn, maxSteps);

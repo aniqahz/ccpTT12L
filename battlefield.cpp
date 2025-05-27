@@ -37,10 +37,10 @@ bool config(ifstream& infile, int& row, int& col, int& maxSteps)
     return true;
 }
 
-void robotPos(ifstream& infile, ofstream& outfile,vector<vector<char>>& field, vector<RobotX>& robots)
+void robotPos(ifstream& infile, ofstream& outfile,vector<vector<char>>& field, int numRobot, vector<RobotX>& robots)
 {
     string line;
-    for(int i=0; i< robots.size(); ++i)
+    for(int i=0; i<numRobot; ++i)
     {
         string rType, rName, posX, posY;
         int x=-1, y=-1;
@@ -54,7 +54,6 @@ void robotPos(ifstream& infile, ofstream& outfile,vector<vector<char>>& field, v
         stringstream ss(line);
         ss>> rType>>rName>> posX>>posY;
         cout << "Loaded robot: " << rType << " " << rName << " Position: " << posX << "," << posY << endl;
-        
         if (posX == "random" && posY == "random")
         {
             if(field.empty() || field[0].empty())
@@ -100,9 +99,14 @@ void robotPos(ifstream& infile, ofstream& outfile,vector<vector<char>>& field, v
             continue;         
         }
 
+        RobotX r;
+        r.id = robots.size() +1;
+        r.x = x;
+        r.y = y;
+        r.active=true;
+        robots.push_back(r);
+
         char sym = rName[0];
-        if(field[x][y] != '.')
-            sym = rName[0] + to_string(i)[0];
         field[x][y] = sym;
 
         cout<<rName<<", "<<sym<<" placed at "<<x<<","<<y<<endl;
@@ -137,16 +141,23 @@ int getTurn(int minSteps, int maxSteps)
 
 void setRobots(vector<RobotX>& robots, vector<int>& spawnTurn, int maxSteps)
 {
-    robots.resize(8);
-    for(int i=1; i<= 8; ++i) //id start from 1 to 8
+   int initial = robots.size();
+   int newRob = 3;
+
+    /*for(int i=1; i<= 8; ++i) //id start from 1 to 8
         robots[i-1]={i,0,0,false}; //id,x,y,boolean value
     
     for(int i =1; i<5; ++i)
-        robots[i].active = true;
+        robots[i].active = true;*/
 
-    for(int i =6; i<= 8; ++i) //spawnturn
+    for(int i = 0; i<= newRob; ++i) //spawnturn
     {
-        int turn = getTurn(3, maxSteps-2);
+        RobotX r;
+        r.id = initial + i + 1;
+        r.active = false;
+        robots.push_back(r);
+
+        int turn = getTurn(3, maxSteps);
         spawnTurn.push_back(turn);
         cout<<"Robot "<<i<<" will spawn at steps: "<<turn<<endl;
     }
@@ -167,7 +178,7 @@ void spawnRobots(vector<RobotX>& robots, const vector<int>& spawnTurn, int curre
     {
         if(currentSteps == spawnTurn[i])
         {
-            if(i + 5 < robots.size())
+            if(i + 5 <robots.size())
             {
                 robots[i+5].active = true;
                 cout<<"Robot "<<robots[i+5].id <<" has spawned."<<endl; 

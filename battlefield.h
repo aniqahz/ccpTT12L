@@ -23,7 +23,7 @@ struct RobotX {
 void displayField(const vector<vector<char>>& field);
 void log(ostream& terminal, ofstream& file, const string& output);
 bool config(ifstream& infile, int& row, int& col, int& steps);
-void robotPos(ifstream& infile, ofstream& outfile, vector<vector<char>>& field, vector<RobotX>& robots);
+void robotPos(ifstream& infile, ofstream& outfile, vector<vector<char>>& field, int numRobot, vector<RobotX>& robots);
 void simulation(ofstream& outfile, vector<vector<char>>& field, vector<RobotX>& robots, const vector<int>& spawnTurn, int maxSteps);
 
 int getTurn(int minSteps, int maxSteps);
