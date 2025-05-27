@@ -33,11 +33,11 @@ int main()
 
     string line;
     getline(infile, line); // robots
-    sscanf(line.c_str(), "robots: %d", &numRobot);
+    sscanf(line.c_str(), "robots: %d", &robots);
 
-    robotPos(infile, outfile, field, numRobot);
+    robotPos(infile, outfile, field, robots);
     displayField(field);
-    setRobots(robots, spawnTurn);
+    setRobots(robots, spawnTurn, maxSteps);
     simulation(outfile, field, robots, spawnTurn, maxSteps);
 
     infile.close();
