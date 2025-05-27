@@ -26,7 +26,7 @@
     void setPosition(int x,int y);
      bool getAliveStatus() const;
      string getRobotType() const;
-    
+     
  };
 
  //MOVING ROBOT-------------------------------------------------------------
@@ -59,7 +59,7 @@
 
  //GENERIC ROBOT----------------------------------------------------
 class GenericRobot : public movingRobot, public shootingRobot, public lookRobot, public thinkingRobot {
-private:
+protected:
     string name;
     int shells; //max 10 per match
     int lives;  //max 3 respawns
@@ -70,6 +70,8 @@ private:
     bool hasSeeingUpgrade;
 
 public:
+//getter and setter methods
+
     GenericRobot(string robotName, int x, int y);
     void think(const vector<vector<char>>& field) override; //decides what action to take
     void look(int dx,int dy, const vector<vector<char>>&field) override ;

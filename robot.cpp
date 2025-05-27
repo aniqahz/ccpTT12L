@@ -80,7 +80,7 @@ GenericRobot::GenericRobot(string robotName, int x, int y):
       for (int dy=-1;dy<=1;dy++){
         newX = PosX + dx;
         newY = PosY + dy;
-      }
+      }};
     
     if (newX>= 0 && newX<field.size() && newY>=0 && newY<field[0].size()){
       if (field[newX][newY] == '.'){
@@ -93,10 +93,10 @@ GenericRobot::GenericRobot(string robotName, int x, int y):
     }
     else{
       cout<<"Drifting away out of bounds..."<<endl;
-    }};};
+    }};
   //FIRE MECHANICS++++++++++++++++++++++++++++++++++++++++++++
     void GenericRobot::fire(int dx, int dy, const vector<vector<char>>&field) {
-
+int targetX, targetY;
       if (PosX==0 && PosY==0 || PosX==dx && PosY==dy){ //prevents suicide wow #mentalawareness month
         cout<<"Cannot fire from the origin!"<<endl;
         return;
@@ -104,13 +104,13 @@ GenericRobot::GenericRobot(string robotName, int x, int y):
 
       for (int dx=-1; dx<=1; dx++){
         for (int dy=-1;dy<=1;dy++){
-        int targetX= PosX+dx;
-        int targetY = PosY+dy;
+         targetX= PosX+dx;
+         targetY = PosY+dy;};};
       
       if (shells>0){ //if bot has more bullets
         shells--; 
         int probability = rand()%100;
-        if (targetX>= 0 && targetY<field.size()&& targetY>=0 && targetY<field[0].size()){
+        if (targetX>= 0 && targetX<field.size()&& targetY>=0 && targetY<field[0].size()){
           if (field[targetX][targetY] == '.'){
             if (probability>=70){
              cout<<"Firing at ("<< targetX<<","<<targetY<<")! KaBaBoom!!"<<endl;
@@ -128,7 +128,7 @@ GenericRobot::GenericRobot(string robotName, int x, int y):
         };
       };
 
-    };};
+    
 
     //MOVE MECHANICS++++++++++++++++++++++++++++++++++++++++++++
     void GenericRobot::move(int dx, int dy, const vector<vector<char>>& field)  {
@@ -149,7 +149,7 @@ GenericRobot::GenericRobot(string robotName, int x, int y):
 //JUMP BOT-------------------------
 jumpBot::jumpBot(string name, const vector<vector<char>>&field): GenericRobot(name,0,0), jumps(3){
   robotType="JumpBot";
-    bool hasMovingUpgrade=true;//set the robot type
+  hasMovingUpgrade=true;//set the robot type
     
   };
 
