@@ -6,9 +6,10 @@ using namespace std;
 
 int main()
 {
-    srand(static_cast<unsigned int>(time(nullptr)));
+    //srand(static_cast<unsigned int>(time(nullptr)));
+    srand(time(0));
 
-    int row = 0, col = 0, steps = 0, numRobot = 0;
+    int row = 0, col = 0, maxSteps = 0, numRobot = 0;
 
     ifstream infile("Robot.txt");
     ofstream outfile("output.txt");
@@ -18,13 +19,17 @@ int main()
         return 1;
     }
 
-    if(!config(infile, row,col,steps))
+    if(!config(infile, row,col,maxSteps))
     {
         cout<<"invalid config"<<endl;
         return 1;
     }
 
     vector<vector<char>> field(row, vector<char>(col, '.'));
+    vector<RobotX> robots;
+    vector<int> spawnTurn;
+
+    //setRobots(robots, spawnTurn);
 
     string line;
     getline(infile, line); // robots
@@ -32,8 +37,8 @@ int main()
 
     robotPos(infile, outfile, field, numRobot);
     displayField(field);
-
-    simulation(outfile, field, steps);
+    setRobots(robots, spawnTurn);
+    simulation(outfile, field, robots, spawnTurn, maxSteps);
 
     infile.close();
     outfile.close();

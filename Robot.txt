@@ -6,3 +6,6 @@ GenericRobot Jet 2 1
 GenericRobot Alpha 5 0
 GenericRobot Beta 2 7
 GenericRobot Star random random
+GenericRobot Purple random random
+GenericRobot Yellow random random
+GenericRobot CNMX 4 5
