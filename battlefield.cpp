@@ -1,5 +1,6 @@
+#include<vector>
 #include "battlefield.h"
-
+#include "robot.h"
 void displayField(const vector<vector<char>>& field)
 {
     for(const auto& row : field)
@@ -37,7 +38,7 @@ bool config(ifstream& infile, int& row, int& col, int& steps)
     return true;
 }
 
-void robotPos(ifstream& infile, ofstream& outfile,vector<vector<char>>& field, int numRobot)
+void robotPos(ifstream& infile, ofstream& outfile, vector<vector<char>>& field, int numRobot, vector<GenericRobot*>& robots)
 {
     string line;
     for(int i=0; i<numRobot; ++i)
@@ -101,18 +102,27 @@ void robotPos(ifstream& infile, ofstream& outfile,vector<vector<char>>& field, i
 
         char sym = rName[0];
         field[x][y] = sym;
-
+     GenericRobot* newRobot = new GenericRobot(rName, x, y);
+    robots.push_back(newRobot);
         cout<<rName<<", "<<sym<<" placed at "<<x<<","<<y<<endl;
         outfile<<rName<<", "<<sym<<" placed at "<<x<<","<<y<<endl;
+        //robot instance
+        
+         
     }
 }
 
-void simulation(ofstream& outfile, vector<vector<char>>& field, int steps)
+void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vector<GenericRobot*>& robots)
 {
     for(int round=0; round<steps; ++round)
     {
         string turn = "Turn " + to_string(round+1) + "/" + to_string(steps);
         log(cout, outfile, turn);
+
+        //to think and act
+        for(auto &robot: robots){
+            robot->think(field);
+        }
 
         for(const auto& row : field)
         {

@@ -3,6 +3,7 @@
  #include <string>
  #include <cstdlib>
  #include <vector>
+  #include <utility> //for pair
  #include "robot.h"
  using namespace std;
 
@@ -45,7 +46,7 @@ GenericRobot::GenericRobot(string robotName, int x, int y):
     };
    
     //THINK MECHANICS++++++++++++++++++++++++++++++++++++++++++
-  void GenericRobot::think(const vector<vector<char>>&field){
+  void GenericRobot::think( vector<vector<char>>&field){
     int action=rand()%5; 
     int dx = rand() % 3 - 1; //randomly choose direction to fire (generates a number from 0-2 then substracts 1)
     int dy = rand() % 3 - 1; //randomly choose direction to fire
@@ -72,7 +73,7 @@ GenericRobot::GenericRobot(string robotName, int x, int y):
     };};
   
 //LOOKING MECHANICS+++++++++++++++++++++++++++++
-    void GenericRobot::look(int dx,int dy, const vector<vector<char>>&field)  {
+    void GenericRobot::look(int dx,int dy,  vector<vector<char>>&field)  {
     int newX,newY ;
 
     //to look around :
@@ -95,7 +96,7 @@ GenericRobot::GenericRobot(string robotName, int x, int y):
       cout<<"Drifting away out of bounds..."<<endl;
     }};
   //FIRE MECHANICS++++++++++++++++++++++++++++++++++++++++++++
-    void GenericRobot::fire(int dx, int dy, const vector<vector<char>>&field) {
+    void GenericRobot::fire(int dx, int dy,  vector<vector<char>>&field) {
 int targetX, targetY;
       if (PosX==0 && PosY==0 || PosX==dx && PosY==dy){ //prevents suicide wow #mentalawareness month
         cout<<"Cannot fire from the origin!"<<endl;
@@ -131,13 +132,15 @@ int targetX, targetY;
     
 
     //MOVE MECHANICS++++++++++++++++++++++++++++++++++++++++++++
-    void GenericRobot::move(int dx, int dy, const vector<vector<char>>& field)  {
+    void GenericRobot::move(int dx, int dy,  vector<vector<char>>& field)  {
       int newX = PosX + dx;
       int newY = PosY + dy;
 
       if (newX >= 0 && newX < field.size() && newY >= 0 && newY < field[0].size()) { 
+        field[PosX][PosY] = '.';
         PosX = newX;
         PosY = newY;
+        field[PosX][PosY] = name[0];
         cout << "Moved to position (" << PosX << "," << PosY << ")" << endl;
       }
       else {
@@ -147,13 +150,13 @@ int targetX, targetY;
 
 
 //JUMP BOT-------------------------
-jumpBot::jumpBot(string name, const vector<vector<char>>&field): GenericRobot(name,0,0), jumps(3){
+jumpBot::jumpBot(string name,  vector<vector<char>>&field): GenericRobot(name,0,0), jumps(3){
   robotType="JumpBot";
   hasMovingUpgrade=true;//set the robot type
     
   };
 
-  void jumpBot:: jump(int newX, int newY, const vector<vector<char>>& field) {
+  void jumpBot:: jump(int newX, int newY,  vector<vector<char>>& field) {
    if (jumps>0){
     if (newX>=0 && newX<field.size()&& newY>=0 && newY<field[0].size()){
       PosX=newX;
@@ -166,7 +169,7 @@ jumpBot::jumpBot(string name, const vector<vector<char>>&field): GenericRobot(na
     };
    };};
 
-     void jumpBot:: think(const vector<vector<char>>& field)  {
+     void jumpBot:: think( vector<vector<char>>& field)  {
     if (jumps >0){
       cout<<"JumpBot is thinking..."<<endl;
       int newX = rand() % field.size();
