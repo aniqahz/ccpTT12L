@@ -1,24 +1,29 @@
+//UPGRADE ROBOT
+#include <iostream>
+#include <string>
 #include "upgrade.h"
 #include "robot.h"
 #include <cstdlib>
+using namespace std;
 
-// HideBot definitions
-HideBot::HideBot(string robotName, int x, int y) : GenericRobot(robotName, x, y)
+// HIDEBOT------------------------------------------------------------------
+HideBot::HideBot(string name, vector<vector<char>>&field) : GenericRobot(name, x, y)
 {
     robotType = "HideBot";
-}
+    hasMovingUpgrade = true; // to set the robot type
+};
 
 void HideBot::startHide()
 {
-    if (hideChance > 0)
+    if (hideChances > 0)
     {
         botHidden = true;
-        hideChance--;
-        cout << robotName << " is now hidden somewhere!" << endl;
+        hideChances--;
+        cout << name << " is now hidden somewhere!" << endl;
     }
     else
     {
-        cout << robotName << " doesn't have any hide chances left." << endl;
+        cout << name << " doesn't have any hide chances left." << endl;
     }
 }
 
@@ -32,11 +37,12 @@ void HideBot::endTurn()
     botHidden = false;
 }
 
-// LongShotBot definitions
-LongShotBot::LongShotBot(string robotName, int x, int y) : GenericRobot(robotName, x, y)
+// LONGSHOTBOT-------------------------------------------------------------------
+LongShotBot::LongShotBot(string name, int x, int y) : GenericRobot(name, x, y)
 {
     robotType = "LongShotBot";
-}
+    hasShootingUpgrade = true;
+};
 
 void LongShotBot::fire(int targetPointX, int targetPointY, const vector<vector<char>>& field)
 {
@@ -44,36 +50,37 @@ void LongShotBot::fire(int targetPointX, int targetPointY, const vector<vector<c
 
     if (distance <= maxDistance && !(targetPointX == PosX && targetPointY == PosY))
     {
-        cout << robotName << " is firing in a long shot at (" << targetPointX << ", " << targetPointY << ")." << endl;
+        cout << name << " is firing in a long shot at (" << targetPointX << ", " << targetPointY << ")." << endl;
     }
     else
     {
-        cout << robotName << " failed to reach the target point!" << endl;
+        cout << name << " failed to reach the target point!" << endl;
     }
 }
 
-// SemiAutoBot definitions
-SemiAutoBot::SemiAutoBot(string robotName, int x, int y) : GenericRobot(robotName, x, y)
+// SEMIAUTOBOT---------------------------------------------------------------------
+SemiAutoBot::SemiAutoBot(string name, int x, int y) : GenericRobot(name, x, y)
 {
     robotType = "SemiAutoBot";
-}
+    hasShootingUpgrade = true;
+};
 
 void SemiAutoBot::fire(int distanceX, int distanceY, const vector<vector<char>>& field)
 {
     if (PosX == distanceX && PosY == distanceY)
     {
-        cout << robotName << " cannot fire at itself" << endl;
+        cout << name << " cannot fire at itself" << endl;
         return;
     }
 
     if (shells <= 0)
     {
-        cout << robotName << " has no more shells left!" << endl;
+        cout << name << " has no more shells left!" << endl;
         return;
     }
 
     shells--;
-    cout << robotName << " fires three shots at (" << distanceX << "," << distanceY << ")" << endl;
+    cout << name << " fires three shots at (" << distanceX << "," << distanceY << ")" << endl;
 
     for (int i = 1; i <= 3; i++)
     {
