@@ -27,6 +27,7 @@ int main()
 
     vector<vector<char>> field(row, vector<char>(col, '.'));
     vector<RobotX> robots;
+    vector<string> robNames;
     vector<int> spawnTurn;
 
     //setRobots(robots, spawnTurn);
@@ -35,10 +36,10 @@ int main()
     getline(infile, line); // robots
     sscanf(line.c_str(), "robots: %d", &numRobot);
 
-    robotPos(infile, outfile, field, numRobot, robots);
+    robotPos(infile, outfile, field, numRobot, robNames, robots);
     displayField(field);
-    setRobots(robots, spawnTurn, maxSteps);
-    simulation(outfile, field, robots, spawnTurn, maxSteps);
+    setRobots(robots, spawnTurn, maxSteps,robNames);
+    simulation(outfile, field, robots, spawnTurn, maxSteps, robNames);
 
     infile.close();
     outfile.close();
