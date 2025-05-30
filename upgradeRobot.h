@@ -1,3 +1,6 @@
+#ifndef UPGRADE_ROBOT_H
+#define UPGRADE_ROBOT_H
+
 #include <iostream>
 #include "robot.h"
 #include <cstdlib>
@@ -112,3 +115,5 @@ class SemiAutoBot : public GenericRobot
             }
         }
 };
+
+#endif 
