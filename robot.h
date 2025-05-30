@@ -12,7 +12,7 @@
  class baseRobot{
     protected:
     //position, type,name, capabilities, one action per turn
-    string robotName;
+    
     string robotType; //type of bot (generic, etc...)
     int PosX,PosY; //position of bot currently
     bool isAlive; 
@@ -26,6 +26,7 @@
     void setPosition(int x,int y);
      bool getAliveStatus() const;
      string getRobotType() const;
+     
      
  };
 
@@ -72,7 +73,7 @@ protected:
 public:
 //getter and setter methods
 
-    GenericRobot(string robotName, int x, int y);
+    GenericRobot(string rName, int x, int y);
     void think( vector<vector<char>>& field) override; //decides what action to take
     void look(int dx,int dy,  vector<vector<char>>&field) override ;
     void fire(int dx, int dy,  vector<vector<char>>&field) override;

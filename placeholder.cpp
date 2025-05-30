@@ -9,7 +9,7 @@
  class baseRobot{
     protected:
     //position, type,name, capabilities, one action per turn
-    string robotName;
+    string rName;
     string robotType; //type of bot (generic, etc...)
     int PosX,PosY; //position of bot currently
     bool isAlive; 
@@ -68,13 +68,13 @@ private:
     bool hasSeeingUpgrade;
 
 public:
-    GenericRobot(string robotName, int x, int y): 
+    GenericRobot(string rName, int x, int y): 
         baseRobot(x, y),
         movingRobot(x, y),
         shootingRobot(x, y),
         lookRobot(x, y),
         thinkingRobot(x, y),
-        name(robotName),
+        name(rName),
         shells(10), // max 10 shells
         lives(3), // max 3 lives
         maxLives(3),
