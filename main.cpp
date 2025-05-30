@@ -2,7 +2,7 @@
 #include "robot.h"
 #include "upgradeRobot.h"
 #include<iostream>
-
+#include <vector>
 using namespace std;
 
 int main()
@@ -26,16 +26,19 @@ int main()
     }
 
     vector<vector<char>> field(row, vector<char>(col, '.'));
+    vector<GenericRobot*> robots; //storing robots in a vector
 
     string line;
     getline(infile, line); // robots
     sscanf(line.c_str(), "robots: %d", &numRobot);
-
-    robotPos(infile, outfile, field, numRobot);
+    robotPos(infile, outfile, field, numRobot,robots);
     displayField(field);
 
-    simulation(outfile, field, steps);
+    simulation(outfile, field, steps, robots);
 
+      // Clean up robot memory
+    for (auto r : robots)
+        delete r;
     infile.close();
     outfile.close();
 
