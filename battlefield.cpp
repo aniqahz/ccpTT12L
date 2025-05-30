@@ -121,7 +121,7 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
 
         //to think and act
         for(auto &robot: robots){
-            robot->think(field);
+            robot->think(field, robots);
         }
 
         for(const auto& row : field)

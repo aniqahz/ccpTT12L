@@ -8,11 +8,13 @@
  #include <utility> //for pair
  using namespace std;
 
+ 
+ class GenericRobot; //forward declaration
  //BASE ROBOT---------------------------------------------------------------
  class baseRobot{
     protected:
     //position, type,name, capabilities, one action per turn
-    
+    string name;
     string robotType; //type of bot (generic, etc...)
     int PosX,PosY; //position of bot currently
     bool isAlive; 
@@ -21,11 +23,13 @@
     public:
     baseRobot(){};
     baseRobot(int x, int y) ;
-    virtual ~baseRobot(){}
+    virtual ~baseRobot() {}
     pair<int,int> getPosition() const;
     void setPosition(int x,int y);
-     bool getAliveStatus() const;
-     string getRobotType() const;
+    bool getAliveStatus() const;
+    string getRobotType() const;
+    void takeDamage();
+    string getrobotname() const { return name; }
      
      
  };
@@ -41,7 +45,7 @@
  class shootingRobot : virtual public baseRobot {
   public :
    shootingRobot(int x,int y);
-   virtual void fire(int x,int y,  vector<vector<char>>&field)=0;
+   virtual void fire(int dx, int dy,  vector<vector<char>>&field,  vector<GenericRobot*>& robots)=0;
  };
 
  //SEEING ROBOT----------------------------------------------------------
@@ -55,13 +59,14 @@
  class thinkingRobot : virtual public baseRobot {
   public:
   thinkingRobot(int x,int y);
-  virtual void think( vector<vector<char>>& field)=0; 
+  virtual void think(vector<vector<char>>& field, vector<GenericRobot*>& robots) = 0;
+  virtual ~thinkingRobot() {}
  };
 
  //GENERIC ROBOT----------------------------------------------------
 class GenericRobot : public movingRobot, public shootingRobot, public lookRobot, public thinkingRobot {
 protected:
-    string name;
+    
     int shells; //max 10 per match
     int lives;  //max 3 respawns
     int maxLives = 3;
@@ -74,9 +79,9 @@ public:
 //getter and setter methods
 
     GenericRobot(string rName, int x, int y);
-    void think( vector<vector<char>>& field) override; //decides what action to take
+    void think(vector<vector<char>>& field, vector<GenericRobot*>& robots) override; //decides what action to take
     void look(int dx,int dy,  vector<vector<char>>&field) override ;
-    void fire(int dx, int dy,  vector<vector<char>>&field) override;
+    void fire(int dx, int dy,  vector<vector<char>>&field,  vector<GenericRobot*>& robots) override;
     void move(int dx, int dy,  vector<vector<char>>& field) override ;
 };
 
@@ -90,7 +95,7 @@ class jumpBot : public  GenericRobot {
   jumpBot(string name,  vector<vector<char>>&field);
 
  void jump(int newX, int newY,  vector<vector<char>>& field);
- void think(vector<vector<char>>& field) override;
+ void think(vector<vector<char>>& field,vector<GenericRobot*>& robots) override;
     
 };
 #endif //end
