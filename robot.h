@@ -65,8 +65,10 @@ protected:
     int shells;
     int lives;
     int maxLives;
-    int upgradesUsed;
-    bool hasMovingUpgrade, hasShootingUpgrade, hasSeeingUpgrade;
+    bool hasMovingUpgrade = false;
+    bool hasShootingUpgrade = false;
+    bool hasSeeingUpgrade = false;
+    int upgradesUsed = 0;
 
 public:
 //getter and setter methods
@@ -76,6 +78,33 @@ public:
     void look(int dx,int dy,  vector<vector<char>>&field) override ;
     void fire(int dx, int dy,  vector<vector<char>>&field) override;
     void move(int dx, int dy,  vector<vector<char>>& field) override ;
+    bool applyUpgrade(UpgradeArea area) {
+    if (upgradesUsed >= 3) {
+        cout << name << ": Max upgrades reached!" << endl;
+        return false;
+    }
+
+    if ((area == UpgradeArea::MOVING && hasMovingUpgrade) ||
+        (area == UpgradeArea::SHOOTING && hasShootingUpgrade) ||
+        (area == UpgradeArea::SEEING && hasSeeingUpgrade)) {
+        cout << name << ": Upgrade area already chosen!" << endl;
+        return false;
+    }
+
+    // Apply upgrade based on area, e.g.
+    if (area == UpgradeArea::MOVING) {
+        hasMovingUpgrade = true;
+        // You might instantiate a new derived class like jumpBot here
+        // or enable special abilities in this instance
+    } else if (area == UpgradeArea::SHOOTING) {
+        hasShootingUpgrade = true;
+    } else if (area == UpgradeArea::SEEING) {
+        hasSeeingUpgrade = true;
+    }
+
+    upgradesUsed++;
+    cout << name << ": Upgrade applied in area " << (int)area << endl;
+    return true;
 };
 
 //JUMP BOT-------------------------
