@@ -1,6 +1,6 @@
 #include "battlefield.h"
 #include "robot.h"
-#include "upgradeRobot.h"
+#include "upgrade.h"
 #include<iostream>
 #include <vector>
 using namespace std;

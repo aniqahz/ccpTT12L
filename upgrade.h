@@ -13,6 +13,7 @@ private:
     bool botHidden = false;
 
 public:
+    string robotName;
     HideBot(string robotName, int x, int y);
     void startHide();
     bool botCurrentlyHide() const;
@@ -25,6 +26,7 @@ private:
     int maxDistance = 3;
 
 public:
+    string robotName;
     LongShotBot(string robotName, int x, int y);
     void fire(int targetPointX, int targetPointY, const vector<vector<char>>& field);
 };
@@ -35,6 +37,7 @@ protected:
     int shells = 3;  // assuming a starting value
 
 public:
+    string robotName;
     SemiAutoBot(string robotName, int x, int y);
     void fire(int distanceX, int distanceY, const vector<vector<char>>& field);
 };
