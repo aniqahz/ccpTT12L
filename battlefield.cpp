@@ -88,8 +88,8 @@ void robotPos(ifstream& infile, ofstream& outfile, vector<vector<char>>& field, 
         }
         if(x<0 || x>= field.size() || y<0 || y>= field[0].size())
         {
-            cout<<"the position is out of bond"<<endl;
-            outfile<<"the position is out of bond"<<endl;
+            cout<<rName<<"the position is out of bound"<<endl;
+            outfile<<rName<<"the position is out of bound"<<endl;
             continue;
         }
 
@@ -104,8 +104,8 @@ void robotPos(ifstream& infile, ofstream& outfile, vector<vector<char>>& field, 
         field[x][y] = sym;
      GenericRobot* newRobot = new GenericRobot(rName, x, y);
     robots.push_back(newRobot);
-        cout<<rName<<", "<<sym<<" placed at "<<x<<","<<y<<endl;
-        outfile<<rName<<", "<<sym<<" placed at "<<x<<","<<y<<endl;
+        cout<<rName<<", "<<sym<<" placed at ("<<x<<","<<y<<")"<<endl;
+        outfile<<rName<<", "<<sym<<" placed at ("<<x<<","<<y<<")"<<endl;
         //robot instance
         
          
@@ -116,6 +116,8 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
 {
     for(int round=0; round<steps; ++round)
     {
+        cout<<endl;
+        outfile<<endl;
         string turn = "Turn " + to_string(round+1) + "/" + to_string(steps);
         log(cout, outfile, turn);
 
