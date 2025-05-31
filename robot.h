@@ -33,8 +33,6 @@ class baseRobot{
         virtual void takeDamage(ofstream& outfile);    
         string getrobotname() const { return name; }
         int getRemainingLives() const { return remainingLives; }
-     
-     
 };
 
 //MOVING ROBOT-------------------------------------------------------------

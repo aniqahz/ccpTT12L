@@ -9,7 +9,7 @@ void displayField(const vector<vector<char>>& field)
     {
         for(char cell : row)
             cout << cell;
-            cout << endl;
+        cout << endl;
     }
 }
 
@@ -39,7 +39,7 @@ bool config(ifstream& infile, int& row, int& col, int& maxSteps)
     return true;
 }
 
-void robotPos(ifstream& infile, ofstream& outfile, vector<vector<char>>& field, int numRobot, vector<GenericRobot*>& robots)
+void robotPos(ifstream& infile, ofstream& outfile, vector<vector<char>>& field, int numRobot, vector<RobotSpawn>&robSpawn,int maxSteps,vector<GenericRobot*>& robot)
 {
     string line;
     for(int i=0; i<numRobot; i++)
@@ -89,35 +89,36 @@ void robotPos(ifstream& infile, ofstream& outfile, vector<vector<char>>& field, 
             }
             
         }
-        if(x<0 || x>= field.size() || y<0 || y>= field[0].size())
+        if(x<0 || x>= field.size() || y<0 || y>= field[0].size() || field[x][y] != '.')
         {
             cout<<rName<<" position is out of bound"<<endl;
             outfile<<rName<<" position is out of bound"<<endl;
             continue;
         }
 
-        if(field[x][y] != '.')
+        GenericRobot* newRobot = new GenericRobot(rName,x,y);
+
+        RobotSpawn data;
+        data.robot = newRobot;
+        data.spawned = (i<5); //spawn first 5
+        data.spawnTurn = (i<5) ? 0 : (rand() % (maxSteps -3 +1)) +3; //random turn between 3 to maxSteps
+        
+        if(data.spawned)
         {
-            cout<<"position is occupied"<<endl;
-            outfile<<"position is occupied"<<endl;   
-            continue;         
+            field[x][y] = rName[0];
+            cout<<rName<<" placed at ("<<x<<","<<y<<")"<<endl;
+            outfile<<rName<<" placed at ("<<x<<","<<y<<")"<<endl;    
         }
-
-        char sym = rName[0];
-        //bool active= (i<5);
-        //if (active)
-        field[x][y] = sym;
-
-        GenericRobot* newRobot = new GenericRobot(rName, x, y);
-        robots.push_back(newRobot);
-
-        cout<<rName<<", "<<sym<<" placed at ("<<x<<","<<y<<")"<<endl;
-        outfile<<rName<<", "<<sym<<" placed at ("<<x<<","<<y<<")"<<endl;
-        //robot instance
+        else
+        {
+            cout<<rName<<" placed at ("<<x<<", "<<y<<")"<<endl;
+            outfile<<rName<<" placed at ("<<x<<", "<<y<<")"<<endl;
+        }
+        robSpawn.push_back(data);
     }
 }
 
-void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vector<GenericRobot*>& robots)
+void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vector<RobotSpawn>& robSpawn,vector<GenericRobot*>& robots)
 {
     // Loop through each simulation turn, up to the maximum number of steps
     for(int round = 0; round < steps; ++round)
@@ -129,14 +130,40 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
         string turn = "Turn " + to_string(round + 1) + "/" + to_string(steps);
         log(cout, outfile, turn);
 
-        //spawnRobots(robots, spawnTurn, round+1,field, robNames);
+        for(auto& data : robSpawn)
+        {
+            if(!data.spawned && round+1 == data.spawnTurn)
+            {
+                auto pos = data.robot->getPosition();
+                int x = pos.first;
+                int y = pos.second;
 
+                if(field[x][y] == '.')
+                {
+                    field[x][y] = data.robot->getrobotname()[0];//first letter of the robot name
+                    data.spawned = true;
+                    robots.push_back(data.robot);
+                    log(cout,outfile, data.robot->getrobotname()+" spawned at "+ to_string(x)+","+to_string(y));
+                }
+                else
+                {
+                    log(cout,outfile, data.robot->getrobotname() +"failed to spawn: position occupied");
+                }
+            }
+
+            if(data.spawned && data.robot->getAliveStatus())
+           {
+            data.robot->think(field,robots,outfile);
+           } 
+
+            
+        }
         // Let each robot take its turn (think and act) if it's still alive
-        for(auto& robot : robots) {
+     /*    for(auto& robot : robots) {
             if (robot->getAliveStatus()) {
                 robot->think(field, robots, outfile);
             }
-        }
+        } */
 
         // Display the updated battlefield after this turn
         for(const auto& row : field) {
@@ -155,9 +182,9 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
         }
 
         // End simulation early if only one robot is left alive
-        if (aliveCount <= 1) {
+     /*  if (aliveCount <= 1) {
             break;
-        }
+        } */
 
         // Optional delay to simulate time between turns (500 milliseconds)
         this_thread::sleep_for(chrono::milliseconds(500));
@@ -184,91 +211,3 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
     }
 }
 
-/*int getTurn(int minSteps, int maxSteps)
-{
-    //srand(time(0));
-    return minSteps + (rand()%(maxSteps - minSteps+1));
-}
-
-void setRobots(vector<RobotX>& robots, vector<int>& spawnTurn, int maxSteps, const vector<string>& robNames)
-{
-   //int totRob = robots.size();
-   int initialRob = 5;
-   int newRob = 3;
-   //int dynRob = totRob - initialRob;
-   //robots.resize(totRob);
-
-    for(int i = 0; i< newRob; ++i) //spawnturn
-    {
-        RobotX r;
-        r.id = initialRob + i + 1;
-        r.active = false;
-        r.x = -1;
-        r.y = -1;
-        
-        robots.push_back(r);
-
-        int turn = getTurn(3, maxSteps);
-        spawnTurn.push_back(turn);
-        cout<<"Robot "<<i<<" will spawn at steps: "<<turn<<endl;
-
-        if((initialRob +i)<robNames.size())
-            cout<<robNames[initialRob+i]<<", "<<r.id<<" spawn at turn "<<turn<<endl;
-        else
-            cout<<"out of range"<<endl;
-    }
-}
-
-void simulateTurn(vector<RobotX>& robots, const vector<int>& spawnTurn, int maxSteps,vector<vector<char>>& field, vector<string>& robNames)
-{
-    for(int i=0; i<= maxSteps; ++i)
-    {
-        cout<<"Round "<<i<<endl;
-        spawnRobots(robots, spawnTurn, i, field, robNames);    
-    }
-}
-
-void spawnRobots(vector<RobotX>& robots, const vector<int>& spawnTurn, int currentSteps, vector<vector<char>>& field, const vector<string>& robNames)
-{
-    int startIndex = robots.size() - spawnTurn.size();
-    for(int i=0; i< spawnTurn.size(); ++i)
-    {
-        if(currentSteps == spawnTurn[i])
-        {
-            int index = startIndex + i;
-
-            if(index >= robots.size() || index >= robNames.size())
-            {
-                cout<<"index out of bound for robot "<< index<<endl;
-                continue;
-            }
-
-            robots[index].active = true;
-            cout<<"Robot "<<robots[index].id <<", "<<robNames[index]<<" has spawned."<<endl; 
-
-            int x = robots[index].x;
-            int y = robots[index].y;
-
-            if(x ==-1 || y==-1)
-            {
-                do{
-                    x = rand() % field.size();
-                    y = rand() % field[0].size();
-                } while (field[x][y] != '.');
-
-                robots[index].x = x;
-                robots[index].y = y;
-            }
-            if(field[x][y]=='.')
-            {
-                char symbol = robNames[index][0];
-                field[x][y] = symbol;
-                cout<<"robot "<<robNames[index]<<" placed at "<<x<<","<<y<<endl;
-            }   
-            else
-            {
-                cout<<"position is occupied "<< i+5<<endl;
-            }
-        }
-    }
-}*/

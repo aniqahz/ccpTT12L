@@ -1,6 +1,3 @@
-M by N : 5 10
-steps: 100
-robots: 5
 M by N : 10 20
 steps: 10
 robots: 8
