@@ -55,7 +55,7 @@ void robotPos(ifstream& infile, ofstream& outfile, vector<vector<char>>& field, 
 
         stringstream ss(line);
         ss>> rType>>rName>> posX>>posY;
-        cout << "Loaded robot: " << rType << " " << rName << " Position: " << posX << "," << posY << endl;
+        cout << "Loaded robot: " << rType << " " << rName << " Position at "<< posX << "," << posY << endl;
         //robNames.push_back(rName);
         
         if (posX == "random" && posY == "random")

@@ -8,4 +8,4 @@ GenericRobot Beta random random
 GenericRobot Star random random
 GenericRobot My 4 12
 GenericRobot Lino 6 12
-GenericRobot Chan 1 8
+GenericRobot Chan random random
