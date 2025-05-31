@@ -14,7 +14,7 @@ class HideBot : public GenericRobot
         bool botHidden = false;
 
     public:
-        HideBot(string name, vector<vector<char>>&field);
+        HideBot(string name, int x, int y);
         void startHide();
         bool botCurrentlyHide() const;
         void endTurn();

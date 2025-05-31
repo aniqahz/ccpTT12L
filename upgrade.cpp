@@ -7,7 +7,7 @@
 using namespace std;
 
 // HIDEBOT------------------------------------------------------------------
-HideBot::HideBot(string name, vector<vector<char>>&field) : GenericRobot(name, x, y)
+HideBot::HideBot(string name, int x, int y) : GenericRobot(name, x, y)
 {
     robotType = "HideBot";
     hasMovingUpgrade = true; // to set the robot type
