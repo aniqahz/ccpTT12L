@@ -1,11 +1,11 @@
-M by N : 15 25
+M by N : 10 20
 steps: 10
-robots: 
+robots: 8
 GenericRobot Kidd 3 6
 GenericRobot Jet 2 1
 GenericRobot Alpha 5 0
 GenericRobot Beta 2 7
 GenericRobot Star random random
-GenericRobot Purple random random
-GenericRobot Yellow random random
-GenericRobot CNMX 4 5
+GenericRobot My 4 12
+GenericRobot Lino 6 12
+GenericRobot Chan 1 8

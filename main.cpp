@@ -6,8 +6,8 @@ using namespace std;
 
 int main()
 {
-    //srand(static_cast<unsigned int>(time(nullptr)));
-    srand(time(0));
+    srand(static_cast<unsigned int>(time(nullptr)));
+  //srand(time(0));
 
     int row = 0, col = 0, maxSteps = 0, numRobot = 0;
 
@@ -26,9 +26,9 @@ int main()
     }
 
     vector<vector<char>> field(row, vector<char>(col, '.'));
-    vector<RobotX> robots;
-    vector<string> robNames;
-    vector<int> spawnTurn;
+    //vector<RobotX> robots;
+    //vector<string> robNames;
+    //vector<int> spawnTurn;
 
     //setRobots(robots, spawnTurn);
 
@@ -36,10 +36,10 @@ int main()
     getline(infile, line); // robots
     sscanf(line.c_str(), "robots: %d", &numRobot);
 
-    robotPos(infile, outfile, field, numRobot, robNames, robots);
+    robotPos(infile, outfile, field, numRobot);//, robNames, robots);
     displayField(field);
-    setRobots(robots, spawnTurn, maxSteps,robNames);
-    simulation(outfile, field, robots, spawnTurn, maxSteps, robNames);
+    //setRobots(robots, spawnTurn, maxSteps,robNames);
+    simulation(outfile, field, maxSteps);
 
     infile.close();
     outfile.close();

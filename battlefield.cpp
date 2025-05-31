@@ -37,10 +37,10 @@ bool config(ifstream& infile, int& row, int& col, int& maxSteps)
     return true;
 }
 
-void robotPos(ifstream& infile, ofstream& outfile,vector<vector<char>>& field, int numRobot, vector<string>& robNames, vector<RobotX>& robots)
+void robotPos(ifstream& infile, ofstream& outfile,vector<vector<char>>& field, int numRobot)
 {
     string line;
-    for(int i=0; i<numRobot; ++i)
+    for(int i=0; i<numRobot; i++)
     {
         string rType, rName, posX, posY;
         int x=-1, y=-1;
@@ -54,7 +54,7 @@ void robotPos(ifstream& infile, ofstream& outfile,vector<vector<char>>& field, i
         stringstream ss(line);
         ss>> rType>>rName>> posX>>posY;
         cout << "Loaded robot: " << rType << " " << rName << " Position: " << posX << "," << posY << endl;
-        robNames.push_back(rName);
+        //robNames.push_back(rName);
         
         if (posX == "random" && posY == "random")
         {
@@ -102,42 +102,42 @@ void robotPos(ifstream& infile, ofstream& outfile,vector<vector<char>>& field, i
         }
 
         char sym = rName[0];
-        bool active= (i<5);
-        if (active)
-            field[x][y] = sym;
+        //bool active= (i<5);
+        //if (active)
+        field[x][y] = sym;
         
-        RobotX r;
+       /* RobotX r;
         r.id = i+1;
         r.x = x;
         r.y = y;
         r.active= active;
-        robots.push_back(r);
+        robots.push_back(r);*/
 
         cout<<rName<<", "<<sym<<" placed at "<<x<<","<<y<<endl;
         outfile<<rName<<", "<<sym<<" placed at "<<x<<","<<y<<endl;
     }
 }
 
-void simulation(ofstream& outfile, vector<vector<char>>& field, vector<RobotX>& robots, const vector<int>& spawnTurn, int maxSteps, vector<string>& robNames)
+void simulation(ofstream& outfile, vector<vector<char>>& field, int maxSteps) //, vector<string>& robNames)
 {
     for(int round=0; round<maxSteps; ++round)
     {
         string turn = "Turn " + to_string(round+1) + "/" + to_string(maxSteps);
         log(cout, outfile, turn);
 
-        spawnRobots(robots, spawnTurn, round+1,field, robNames);
+        //spawnRobots(robots, spawnTurn, round+1,field, robNames);
 
         for(const auto& row : field)
         {
             string Str(row.begin(), row.end());
             log(cout, outfile, Str);
         }
-        displayField(field);
+      //displayField(field);
         this_thread::sleep_for(chrono::milliseconds(500)); //pause before next round/step
     }
 }
 
-int getTurn(int minSteps, int maxSteps)
+/*int getTurn(int minSteps, int maxSteps)
 {
     //srand(time(0));
     return minSteps + (rand()%(maxSteps - minSteps+1));
@@ -224,4 +224,4 @@ void spawnRobots(vector<RobotX>& robots, const vector<int>& spawnTurn, int curre
             }
         }
     }
-}
+}*/
