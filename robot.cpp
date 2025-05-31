@@ -6,6 +6,7 @@
   #include <utility> //for pair
  #include "robot.h"
  #include <fstream>
+ #include "battlefield.h"
  using namespace std;
 
 
@@ -56,33 +57,47 @@ GenericRobot::GenericRobot(string rName, int x, int y):
     };
    
     //THINK MECHANICS++++++++++++++++++++++++++++++++++++++++++
-  void GenericRobot::think( vector<vector<char>>&field, vector<GenericRobot*>& robots){
-    cout<<name<<" is thinking..."<<endl;
-    int action=rand()%5; 
-    int dx = rand() % 3 - 1; //randomly choose direction to fire (generates a number from 0-2 then substracts 1)
-    int dy = rand() % 3 - 1; //randomly choose direction to fire
+  void GenericRobot::think( vector<vector<char>>&field, vector<GenericRobot*>& robots, ofstream& outfile){
+    log(cout, outfile, name + " is thinking...");
+    int action;
+    do {
+    action = rand() % 4 +1; // 1 = move, 2 = fire, 3 = look, 4 = stay (to avoid NONE action)
+    } 
+    while (action == lastaction); //to avoid getting same action as before
+   
+    int dx, dy;
+    do {
+    dx = rand() % 3 - 1;
+    dy = rand() % 3 - 1;
+    } while (dx == 0 && dy == 0); //prevent standing still
+
     switch(action){
 
-    case 0:
-   cout<<name<<" is firing...!"<<endl;
-    fire(dx,dy, field, robots); //fire in a random direction
+    case 1: //fire
+   log(cout, outfile, name + " is firing...!");
+    fire(dx,dy, field, robots,outfile); //fire in a random direction
+   lastaction = FIRE;
     break;
-    case 1: 
-     cout<<name<<" is looking around for enemies..."<<endl;
-    look(PosX, PosY, field); //look at current position
+    case 2: //look
+    log(cout, outfile, name + " is looking around for enemies...");
+    look(PosX, PosY, field,outfile); //look at current position
+    lastaction = LOOK;
     break;
-     case 2: //look
-    cout<<name<<" is moving..."<<endl;
-    move(dx, dy, field); //move in a random direction
+     case 3: //move
+    log(cout, outfile, name + " is moving...");
+    move(dx, dy, field, outfile); //move in a random direction
+   lastaction = MOVE;
     break;
-    case 3:
-    cout<<name<<" is staying still..."<<endl;
+    case 4: //stay still
+    log(cout, outfile, name + " is staying still...");
+    lastaction = STAY;
     break;
-    };cout<<endl;};
+    };
+    log(cout, outfile, "");};
     
   
 //LOOKING MECHANICS+++++++++++++++++++++++++++++
-    void GenericRobot::look(int dx,int dy,  vector<vector<char>>&field)  {
+    void GenericRobot::look(int dx,int dy,  vector<vector<char>>&field, ofstream& outfile) { 
     int newX,newY ;
 
     //to look around :
@@ -94,11 +109,11 @@ GenericRobot::GenericRobot(string rName, int x, int y):
     
     if (newX>= 0 && newX<field.size() && newY>=0 && newY<field[0].size()){
       if (field[newX][newY] == '.'){
-        cout<<name<<" : Coast is clear!"<<endl;
+       log(cout, outfile, name + " : Coast is clear!");
       }
 
       else{
-        cout<<name<<": Enemy detected!"<<endl;
+         log(cout, outfile, name + " : Enemy spotted nearby!");
       }
     }
     else{
@@ -108,49 +123,58 @@ GenericRobot::GenericRobot(string rName, int x, int y):
     }};
 
   //FIRE MECHANICS++++++++++++++++++++++++++++++++++++++++++++
-    void GenericRobot::fire(int dx, int dy,  vector<vector<char>>&field,  vector<GenericRobot*>& robots) {
-int targetX, targetY;
-      if (PosX==0 && PosY==0 || PosX==dx && PosY==dy){ //prevents suicide wow #mentalawareness month
-        cout<<name<<"Cannot fire from the origin!"<<endl;
+   void GenericRobot::fire(int dx, int dy, vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) {
+    // Prevent shooting from origin or into self
+    if ((PosX == 0 && PosY == 0) || (dx == 0 && dy == 0)) {
+        log(cout, outfile, name + " cannot fire from the origin or at itself!");
         return;
-      }
+    }
 
-      for (int dx=-1; dx<=1; dx++){
-        for (int dy=-1;dy<=1;dy++){
-         targetX= PosX+dx;
-         targetY = PosY+dy;};};
-      
-      if (shells>0){ //if bot has more bullets
-        shells--; 
-        int probability = rand()%100;
-        if (targetX>= 0 && targetX<field.size()&& targetY>=0 && targetY<field[0].size()){
-          for (auto& robot: robots){
-            if(robot !=this && robot-> getAliveStatus() ){
-              auto [x,y] = robot -> getPosition();
-              if ( x== targetX && y== targetY){
-                cout<<name<<" : Shot" << robot->getrobotname()<< " at "<< targetX<<","<<targetY<<")! KaBaBoom!!"<<endl;
-                robot-> takeDamage();
-                return;
-              }
-            }
-            else{
-              cout<<name<<" : Missed at ("<< targetX<<","<<targetY<<")!"<<endl;
-            }
-          };
-        }
-        else{
-          cout<<name<<": No enemy in range!"<<endl;
-        }
-      }
-      else{
-        cout<<name<<": Out of shells! Self-destructing now X___X"<<endl;
-      };
-    };
+    // Calculate target coordinates
+    int targetX = PosX + dx;
+    int targetY = PosY + dy;
 
+    if (shells <= 0) {
+        log(cout, outfile, name + ": Out of shells! Self-destructing now X___X");
+        isAlive = false;
+        return;
+    }
+
+    // Check if target is within field bounds
+    if (targetX < 0 || targetX >= field.size() || targetY < 0 || targetY >= field[0].size()) {
+        log(cout, outfile, name + ": Target out of bounds.");
+        return;
+    }
+
+    shells--; // Use a shell
+    int probability = rand() % 100;
+
+    // Simulate hit with probability (e.g., 70% chance to hit)
+    bool hit = false;
+    for (auto& robot : robots) {
+        if (robot != this && robot->getAliveStatus()) {
+            auto [x, y] = robot->getPosition();
+            if (x == targetX && y == targetY) {
+                if (probability < 70) {
+                    robot->takeDamage();
+                    log(cout, outfile, name + " : Hit " + robot->getrobotname() + " at (" + to_string(targetX) + "," + to_string(targetY) + ")!");
+                    hit = true;
+                } else {
+                    log(cout, outfile, name + " : Missed at (" + to_string(targetX) + "," + to_string(targetY) + ")!");
+                }
+                break;
+            }
+        }
+    }
+
+    if (!hit) {
+        log(cout, outfile, name + " : No enemy in range at (" + to_string(targetX) + "," + to_string(targetY) + ")!");
+    }
+}
     
 
     //MOVE MECHANICS++++++++++++++++++++++++++++++++++++++++++++
-    void GenericRobot::move(int dx, int dy,  vector<vector<char>>& field)  {
+    void GenericRobot::move(int dx, int dy,  vector<vector<char>>& field, ofstream& outfile)  {
       int newX = PosX + dx;
       int newY = PosY + dy;
 
@@ -159,45 +183,45 @@ int targetX, targetY;
         PosX = newX;
         PosY = newY;
         field[PosX][PosY] = name[0];
-        cout <<name<< " : Moved to position (" << PosX << "," << PosY << ")" << endl;
-      }
+        log(cout, outfile, name + " : Moved to position (" + to_string(PosX) + "," + to_string(PosY) + ")");      }
       else {
-        cout <<name<< " : Cannot move out of bounds!" << endl;
+        log(cout, outfile, name + " : Cannot move out of bounds!");
+    
       }
-    } 
+    };
 
 
 //JUMP BOT-------------------------
-jumpBot::jumpBot(string name,  vector<vector<char>>&field): GenericRobot(name,0,0), jumps(3){
+jumpBot::jumpBot(string name,  vector<vector<char>>&field, ofstream& outfile): GenericRobot(name,0,0), jumps(3){
   robotType="JumpBot";
   hasMovingUpgrade=true;//set the robot type
     
   };
 
-  void jumpBot:: jump(int newX, int newY,  vector<vector<char>>& field) {
+  void jumpBot:: jump(int newX, int newY,  vector<vector<char>>& field, ofstream& outfile) {
    if (jumps>0){
     cout<<name<<" upgraded! to jumpBot!"<<endl;
     if (newX>=0 && newX<field.size()&& newY>=0 && newY<field[0].size()){
       PosX=newX;
       PosY=newY;
       jumps--;
-      cout<<name<< "(jumpbot) spawned at ("<<PosX<<","<<PosY<<")"<<endl;
-      outfile<<name<< "(jumpbot) spawned at ("<<PosX<<","<<PosY<<")"<<endl;
+      log(cout, outfile, name + " jumped to position (" + to_string(PosX) + "," + to_string(PosY) + ")");
     }
     else{
       cout<<name<<" Out of bounds! Cannot jump!"<<endl;
     };
-   };};
+   };
+  };
 
-     void jumpBot:: think( vector<vector<char>>& field, vector<GenericRobot*>& robots)  {
+     void jumpBot:: think( vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile)  {
     if (jumps >0){
       int newX = rand() % field.size();
       int newY = rand() % field[0].size();
-      jump(newX,newY, field);
+      jump(newX,newY, field, outfile);
     }
     else{
-      cout<<"JumpBot has no jumps left!"<<endl;
-      GenericRobot::think(field, robots); //fallback to generic thinking
+      log(cout, outfile, name + " has no jumps left! Falling back to generic thinking.");
+      GenericRobot::think(field, robots, outfile); //fallback to generic thinking
     };
 
   };
