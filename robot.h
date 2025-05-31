@@ -71,7 +71,7 @@ class GenericRobot : public movingRobot, public shootingRobot, public lookRobot,
     protected:
         int shells; //max 10 per match
         int lives;  //max 3 respawns
-        int maxLives = 1;
+        int maxLives = 3;
         int upgradesUsed;
         bool hasMovingUpgrade;
         bool hasShootingUpgrade;
