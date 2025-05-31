@@ -24,6 +24,7 @@ void baseRobot::takeDamage(ofstream& outfile) {
         remainingLives--;
         if (remainingLives <= 0) {
             isAlive = false;
+            log(cout,outfile,name+" has been destroyed!!");
         }
     }
 }
@@ -179,7 +180,7 @@ void GenericRobot::fire(int dx, int dy, vector<vector<char>>& field, vector<Gene
             if (rx == targetX && ry == targetY) {
                 int probability = rand() % 100;
 
-                if (probability < 70) {
+                if (true) {
                     // Successful hit
                     robot->takeDamage(outfile);
 

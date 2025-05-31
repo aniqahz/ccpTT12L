@@ -41,6 +41,8 @@ bool config(ifstream& infile, int& row, int& col, int& maxSteps)
 
 void robotPos(ifstream& infile, ofstream& outfile, vector<vector<char>>& field, int numRobot, vector<RobotSpawn>&robSpawn,int maxSteps,vector<GenericRobot*>& robot)
 {
+    robot.clear();
+    robSpawn.clear();
     string line;
     for(int i=0; i<numRobot; i++)
     {
@@ -56,7 +58,6 @@ void robotPos(ifstream& infile, ofstream& outfile, vector<vector<char>>& field, 
         stringstream ss(line);
         ss>> rType>>rName>> posX>>posY;
         cout << "Loaded robot: " << rType << " " << rName << " Position at "<< posX << "," << posY << endl;
-        //robNames.push_back(rName);
         
         if (posX == "random" && posY == "random")
         {
@@ -106,13 +107,14 @@ void robotPos(ifstream& infile, ofstream& outfile, vector<vector<char>>& field, 
         if(data.spawned)
         {
             field[x][y] = rName[0];
+            robot.push_back(newRobot);
             cout<<rName<<" placed at ("<<x<<","<<y<<")"<<endl;
             outfile<<rName<<" placed at ("<<x<<","<<y<<")"<<endl;    
         }
         else
         {
-            cout<<rName<<" placed at ("<<x<<","<<y<<")"<<endl;
-            outfile<<rName<<" placed at ("<<x<<","<<y<<")"<<endl;
+            cout<<rName<<" will spawn at ("<<x<<","<<y<<")"<<endl;
+            outfile<<rName<<" will spawn at ("<<x<<","<<y<<")"<<endl;
         }
         robSpawn.push_back(data);
     }
@@ -129,6 +131,8 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
         // Display the turn number
         string turn = "Turn " + to_string(round + 1) + "/" + to_string(steps);
         log(cout, outfile, turn);
+
+        cout << "Total robots in vector: " << robots.size() << endl;
 
         for(auto& data : robSpawn)
         {
@@ -155,6 +159,14 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
            {
             data.robot->think(field,robots,outfile);
            } 
+           if(data.spawned && !data.robot->getAliveStatus())
+           {
+            auto pos = data.robot->getPosition();
+            int x = pos.first;
+            int y = pos.second;
+            field[x][y] ='.';
+           }
+
 
             
         }
