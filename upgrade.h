@@ -1,7 +1,7 @@
 #ifndef UPGRADE_H
 #define UPGRADE_H
 
-#include "robot.h"
+#include "myrobot.h"
 #include <iostream>
 #include <string>
 #include <cstdlib>

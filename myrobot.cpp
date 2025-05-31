@@ -1,5 +1,5 @@
-#include "robot.h"
-#include "battlefield.h"
+#include "myrobot.h"
+#include "mybattlefield.h"
 #include "upgrade.h"
 
 // ---------------- baseRobot ----------------

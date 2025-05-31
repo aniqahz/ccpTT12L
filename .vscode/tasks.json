@@ -10,8 +10,8 @@
                 "-fdiagnostics-color=always",
                 "-g",
                 "main.cpp",
-                "battlefield.cpp",
-                "robot.cpp",
+                "mybattlefield.cpp",
+                "myrobot.cpp",
                 "upgrade.cpp",
                 "-o",
                 "${fileDirname}\\main.exe"

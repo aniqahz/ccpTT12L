@@ -1,5 +1,5 @@
-#ifndef ROBOT_H
-#define ROBOT_H
+#ifndef MYROBOT_H
+#define MYROBOT_H
 
 #include <iostream>
 #include <string>

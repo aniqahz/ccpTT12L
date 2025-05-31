@@ -1,5 +1,5 @@
 #include "upgrade.h"
-#include "battlefield.h"
+#include "mybattlefield.h"
 
 // ---------------- jumpBot ----------------
 

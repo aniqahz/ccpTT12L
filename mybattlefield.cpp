@@ -1,5 +1,5 @@
-#include "battlefield.h"
-#include "robot.h"
+#include "mybattlefield.h"
+#include "myrobot.h"
 vector<GenericRobot*> activeRobots;
 queue<GenericRobot*> respawnQueue;
 vector<GenericRobot*> revertNextTurn;

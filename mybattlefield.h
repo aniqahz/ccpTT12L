@@ -1,7 +1,7 @@
-#ifndef BATTLEFIELD_H
-#define BATTLEFIELD_H
+#ifndef myBATTLEFIELD_H
+#define myBATTLEFIELD_H
 
-#include "robot.h"
+#include "myrobot.h"
 #include<iostream>
 #include<vector>
 #include<string>
