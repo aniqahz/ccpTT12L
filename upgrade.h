@@ -18,7 +18,7 @@ class HideBot : public GenericRobot
         void startHide();
         bool botCurrentlyHide() const;
         void endTurn();
-        void think(vector<vector<char>>& field) override;
+        void think(vector<vector<char>>& field);
 };
 
 // LONGSHOTBOT(shooting upgrade)----------------------------------------------
