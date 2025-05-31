@@ -11,17 +11,17 @@
 #include<chrono>
 #include<thread>
 #include<sstream>
+#include "robot.h" 
 #include<random>
 
 using namespace std;
-/*struct RobotX {
-    int id;
+struct Robot {
     string name;
     int x,y;
-    bool alive=true;
-    bool spawned = false;
+    int entryTurn;
+    bool spawned;
 };
-*/
+
 //void initializeField(vector<vector<char>>& field, int col, int row);
 void displayField(const vector<vector<char>>& field);
 void log(ostream& terminal, ofstream& file, const string& output);

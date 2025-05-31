@@ -1,4 +1,7 @@
 #include "battlefield.h"
+#include "robot.h"
+
+#include<vector>
 
 void displayField(const vector<vector<char>>& field)
 {
@@ -6,7 +9,7 @@ void displayField(const vector<vector<char>>& field)
     {
         for(char cell : row)
             cout << cell;
-        cout << endl;
+            cout << endl;
     }
 }
 
@@ -26,7 +29,6 @@ bool config(ifstream& infile, int& row, int& col, int& maxSteps)
     else 
         return false;
 
-
     if(getline(infile, line))
     {
         sscanf(line.c_str(), "steps: %d", &maxSteps);
@@ -37,7 +39,7 @@ bool config(ifstream& infile, int& row, int& col, int& maxSteps)
     return true;
 }
 
-void robotPos(ifstream& infile, ofstream& outfile,vector<vector<char>>& field, int numRobot)
+void robotPos(ifstream& infile, ofstream& outfile, vector<vector<char>>& field, int numRobot, vector<GenericRobot*>& robots)
 {
     string line;
     for(int i=0; i<numRobot; i++)
@@ -89,8 +91,8 @@ void robotPos(ifstream& infile, ofstream& outfile,vector<vector<char>>& field, i
         }
         if(x<0 || x>= field.size() || y<0 || y>= field[0].size())
         {
-            cout<<"the position is out of bond"<<endl;
-            outfile<<"the position is out of bond"<<endl;
+            cout<<rName<<" position is out of bound"<<endl;
+            outfile<<rName<<" position is out of bound"<<endl;
             continue;
         }
 
@@ -105,35 +107,80 @@ void robotPos(ifstream& infile, ofstream& outfile,vector<vector<char>>& field, i
         //bool active= (i<5);
         //if (active)
         field[x][y] = sym;
-        
-       /* RobotX r;
-        r.id = i+1;
-        r.x = x;
-        r.y = y;
-        r.active= active;
-        robots.push_back(r);*/
 
-        cout<<rName<<", "<<sym<<" placed at "<<x<<","<<y<<endl;
-        outfile<<rName<<", "<<sym<<" placed at "<<x<<","<<y<<endl;
+        GenericRobot* newRobot = new GenericRobot(rName, x, y);
+        robots.push_back(newRobot);
+
+        cout<<rName<<", "<<sym<<" placed at ("<<x<<","<<y<<")"<<endl;
+        outfile<<rName<<", "<<sym<<" placed at ("<<x<<","<<y<<")"<<endl;
+        //robot instance
     }
 }
 
-void simulation(ofstream& outfile, vector<vector<char>>& field, int maxSteps) //, vector<string>& robNames)
+void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vector<GenericRobot*>& robots)
 {
-    for(int round=0; round<maxSteps; ++round)
+    // Loop through each simulation turn, up to the maximum number of steps
+    for(int round = 0; round < steps; ++round)
     {
-        string turn = "Turn " + to_string(round+1) + "/" + to_string(maxSteps);
+        cout << endl;
+        outfile << endl;
+
+        // Display the turn number
+        string turn = "Turn " + to_string(round + 1) + "/" + to_string(steps);
         log(cout, outfile, turn);
 
         //spawnRobots(robots, spawnTurn, round+1,field, robNames);
 
-        for(const auto& row : field)
-        {
-            string Str(row.begin(), row.end());
-            log(cout, outfile, Str);
+        // Let each robot take its turn (think and act) if it's still alive
+        for(auto& robot : robots) {
+            if (robot->getAliveStatus()) {
+                robot->think(field, robots, outfile);
+            }
         }
-      //displayField(field);
-        this_thread::sleep_for(chrono::milliseconds(500)); //pause before next round/step
+
+        // Display the updated battlefield after this turn
+        for(const auto& row : field) {
+            string str(row.begin(), row.end());
+            log(cout, outfile, str);
+        }
+
+        // Count how many robots are still alive after the turn
+        int aliveCount = 0;
+        GenericRobot* lastAlive = nullptr; // Keep track of the last robot alive (in case it's the winner)
+        for (auto& r : robots) {
+            if (r->getAliveStatus()) {
+                aliveCount++;
+                lastAlive = r;
+            }
+        }
+
+        // End simulation early if only one robot is left alive
+        if (aliveCount <= 1) {
+            break;
+        }
+
+        // Optional delay to simulate time between turns (500 milliseconds)
+        this_thread::sleep_for(chrono::milliseconds(500));
+    }
+
+    // Final result after simulation ends (either due to steps limit or one robot left)
+    int aliveCount = 0;
+    GenericRobot* winner = nullptr;
+    for (auto& r : robots) {
+        if (r->getAliveStatus()) {
+            aliveCount++;
+            winner = r;
+        }
+    }
+
+    log(cout, outfile, "\n=== Simulation Ended ===");
+
+    // Declare winner or a draw
+    if (aliveCount == 1) {
+        // Ensure getRobotType() is defined in GenericRobot or subclass
+        log(cout, outfile, "🏆 Winner: " + winner->getrobotname() + " the " + winner->getRobotType());
+    } else {
+        log(cout, outfile, "🤝 No clear winner — it's a draw!");
     }
 }
 
