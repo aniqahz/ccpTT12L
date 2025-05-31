@@ -13,6 +13,8 @@
                 "mybattlefield.cpp",
                 "myrobot.cpp",
                 "upgrade.cpp",
+                "battlefield.cpp",
+                "robot.cpp",
                 "-o",
                 "${fileDirname}\\main.exe"
             ],
