@@ -58,7 +58,7 @@ GenericRobot::GenericRobot(string rName, int x, int y):
 { 
     name = rName; //set the robot name
     robotType = "GenericRobot"; //set the robot type
-    isAlive = true; //alive status
+  //isAlive = true; //alive status
 };
    
 //THINK MECHANICS++++++++++++++++++++++++++++++++++++++++++

@@ -111,8 +111,8 @@ void robotPos(ifstream& infile, ofstream& outfile, vector<vector<char>>& field, 
         }
         else
         {
-            cout<<rName<<" placed at ("<<x<<", "<<y<<")"<<endl;
-            outfile<<rName<<" placed at ("<<x<<", "<<y<<")"<<endl;
+            cout<<rName<<" placed at ("<<x<<","<<y<<")"<<endl;
+            outfile<<rName<<" placed at ("<<x<<","<<y<<")"<<endl;
         }
         robSpawn.push_back(data);
     }
@@ -143,7 +143,7 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
                     field[x][y] = data.robot->getrobotname()[0];//first letter of the robot name
                     data.spawned = true;
                     robots.push_back(data.robot);
-                    log(cout,outfile, data.robot->getrobotname()+" spawned at "+ to_string(x)+","+to_string(y));
+                    log(cout,outfile, data.robot->getrobotname()+" spawned at ("+ to_string(x)+","+to_string(y)+")");
                 }
                 else
                 {
@@ -180,11 +180,12 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
                 lastAlive = r;
             }
         }
+        cout<<"Alive robots: "<<aliveCount<<endl;
 
         // End simulation early if only one robot is left alive
-     /*  if (aliveCount <= 1) {
+       if (aliveCount <= 1) {
             break;
-        } */
+        } 
 
         // Optional delay to simulate time between turns (500 milliseconds)
         this_thread::sleep_for(chrono::milliseconds(500));

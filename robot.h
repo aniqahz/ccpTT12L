@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <cstdlib>
+#include<fstream>
 #include <vector>
 #include <utility> //for pair
 using namespace std;
