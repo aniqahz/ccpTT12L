@@ -14,10 +14,12 @@ Phone: 011-6204 6219 | 011-6346 4323 | 019-7109905 | 019-966 0664
 
 
 //UPGRADE ROBOT
-#include <iostream>
-#include <string>
 #include "upgrade.h"
 #include "robot.h"
+
+#include <iostream>
+#include <fstream>
+#include <string>
 #include <cstdlib>
 using namespace std;
 
@@ -34,11 +36,11 @@ void HideBot::startHide()
     {
         botHidden = true;
         hideChances--;
-        cout << name << " is now hidden somewhere!" << endl;
+        log(cout, outfile, name + " is now hidden somewhere......!");
     }
     else
     {
-        cout << name << " doesn't have any hide chances left." << endl;
+        log(cout,outfile, name + " doesn't have any hide chances left.");
     }
 }
 
@@ -65,11 +67,11 @@ void LongShotBot::fire(int targetPointX, int targetPointY, const vector<vector<c
 
     if (distance <= maxDistance && !(targetPointX == PosX && targetPointY == PosY))
     {
-        cout << name << " is firing in a long shot at (" << targetPointX << ", " << targetPointY << ")." << endl;
+        log(cout, outfile, name + " is firing in a long shot at (" + to_string(PosX) + ", " + to_string(PosY) + ")." << endl;
     }
     else
     {
-        cout << name << " failed to reach the target point!" << endl;
+        log(cout, outfile, name + " failed to reach the target point!");
     }
 }
 
@@ -84,29 +86,29 @@ void SemiAutoBot::fire(int distanceX, int distanceY, const vector<vector<char>>&
 {
     if (PosX == distanceX && PosY == distanceY)
     {
-        cout << name << " cannot fire at itself" << endl;
+        log(cout, outfile, name + " cannot fire at itself");
         return;
     }
 
     if (shells <= 0)
     {
-        cout << name << " has no more shells left!" << endl;
+        log(cout, outfile, name + " has no more shells left ! OH NOOO! ");
         return;
     }
 
     shells--;
-    cout << name << " fires three shots at (" << distanceX << "," << distanceY << ")" << endl;
+    log(cout, outfile, name + " fires three shots at (" + to_string(PosX) +"," + to_string(PosY) + ")" );
 
     for (int i = 1; i <= 3; i++)
     {
         int hitChance = rand() % 100;
         if (hitChance < 70)
         {
-            cout << " Shot " << i << ": Hit the target!" << endl;
+            log(cout, outfile , " Shot " + i + ": Hit the target!" );
         }
         else
         {
-            cout << " Shot " << i << ": Miss the target!" << endl;
+            log(cout, outfile," Shot " + i +": Miss the target!" );
         }
     }
 }
