@@ -5,6 +5,7 @@
 #include <string>
 #include <cstdlib>
 #include <vector>
+#include <algorithm>
 using namespace std;
 
 // Base class
@@ -19,35 +20,39 @@ protected:
 public:
     baseRobot();
     baseRobot(int x, int y);
+    string getName() const { return robotName; }
     pair<int, int> getPosition() const;
-    void setPosition(int x, int y);
+    virtual void setPosition(int x, int y);
     bool getAliveStatus() const;
     string getRobotType() const;
+    void loseLife();
+    int getRemainingLives() const;
+    void markDead();
+    virtual void reset() = 0;
 };
 
 // Abstract capability classes
 class movingRobot : virtual public baseRobot {
 public:
     movingRobot(int x, int y);
-    virtual void move(int dx, int dy, const vector<vector<char>> &field) = 0;
+    virtual void move(int dx, int dy, vector<vector<char>> &field, ofstream& outfile) = 0;
 };
 
 class shootingRobot : virtual public baseRobot {
 public:
     shootingRobot(int x, int y);
-    virtual void fire(int x, int y, const vector<vector<char>> &field) = 0;
-};
+    virtual bool fire(int x, int y, vector<vector<char>>& field, ofstream& outfile) = 0;  };
 
 class lookRobot : virtual public baseRobot {
 public:
     lookRobot(int x, int y);
-    virtual void look(int dx, int dy, const vector<vector<char>> &field) = 0;
+    virtual void look(int dx, int dy, const vector<vector<char>> &field, ofstream& outfile) = 0;
 };
 
 class thinkingRobot : virtual public baseRobot {
 public:
     thinkingRobot(int x, int y);
-    virtual void think(const vector<vector<char>> &field) = 0;
+    virtual void think(vector<vector<char>> &field, ofstream& outfile) = 0;
 };
 
 // Generic robot
@@ -63,10 +68,13 @@ protected:
 public:
     GenericRobot(string robotName, int x, int y);
 
-    void think(const vector<vector<char>> &field) override;
-    void look(int dx, int dy, const vector<vector<char>> &field) override;
-    void fire(int dx, int dy, const vector<vector<char>> &field) override;
-    void move(int dx, int dy, const vector<vector<char>> &field) override;
+    void think(vector<vector<char>> &field, ofstream& outfile) override;
+    void look(int dx, int dy, const vector<vector<char>> &field, ofstream& outfile) override;
+    bool fire(int dx, int dy, vector<vector<char>> &field, ofstream& outfile) override;
+    void move(int dx, int dy, vector<vector<char>> &field, ofstream& outfile) override;
+    void reset();
+    void awardUpgrade(std::vector<GenericRobot*>& activeRobots, std::vector<std::vector<char>>& field, ofstream& outfile);
+    void logStatus(ofstream& out) const;
 };
 
 #endif
