@@ -45,6 +45,7 @@ bool config(ifstream& infile, int& row, int& col, int& steps) {
 }
 
 void robotPos(ifstream& infile, ofstream& outfile, vector<vector<char>>& field, int numRobot, vector<RobotSpawn>& robSpawn, int maxSteps, vector<GenericRobot*>& robots) {
+    robots.clear();
     robSpawn.clear();
     string line;
     for (int i = 0; i < numRobot; ++i) {
@@ -80,17 +81,19 @@ void robotPos(ifstream& infile, ofstream& outfile, vector<vector<char>>& field, 
         RobotSpawn data;
         data.robot = newRobot;
         data.spawned = (i < numRobot - 3); // Spawn all except last 3
-        data.spawnTurn = data.spawned ? 0 : (rand() % (maxSteps - 2)) + 3;
+        data.spawnTurn = data.spawned ? 0 : (rand() % (maxSteps - 3)) + 3;
 
         if (data.spawned) {
             field[x][y] = rName[0];
             robots.push_back(newRobot);
+
             activeRobots.push_back(newRobot);
             positionToRobot[{x, y}] = newRobot;
             robotRespawnCount[newRobot] = 0;
+
             log(cout, outfile, rName + " placed at (" + to_string(x) + "," + to_string(y) + ")");
         } else {
-            log(cout, outfile, rName + " will spawn at (" + to_string(x) + "," + to_string(y) + ") on turn " + to_string(data.spawnTurn));
+            log(cout, outfile, rName + " will spawn at (" + to_string(x) + "," + to_string(y) + ") on turn " + to_string(data.spawnTurn+1));
         }
 
         robSpawn.push_back(data);
@@ -135,7 +138,7 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
         for (auto& bot : revertNextTurn) if (bot == oldBot) bot = newBot;
         for (auto& [pos, bot] : positionToRobot) if (bot == oldBot) bot = newBot;
 
-        for (auto& data : robSpawn) {
+      /*   for (auto& data : robSpawn) {
             if (!data.spawned && steps + 1 == data.spawnTurn) {
                 auto [x, y] = data.robot->getPosition();
                 if (field[x][y] == '.') {
@@ -152,7 +155,7 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
                     log(cout, outfile, data.robot->getRobotName() + " failed to spawn (spot occupied)");
                 }
             }
-        }
+        } */
 
         if (robotRespawnCount.count(oldBot)) {
             robotRespawnCount[newBot] = robotRespawnCount[oldBot];
@@ -169,7 +172,50 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
 
     for (int round = 0; round < steps; ++round) {
         log(cout, outfile, "\nTurn " + to_string(round + 1) + "/" + to_string(steps));
+        
+        for (auto& data : robSpawn) {
+            if (!data.spawned && data.spawnTurn == round) {
+                auto[x,y] = data.robot->getPosition();
+                if (field[x][y] == '.') {
+                    field[x][y] = data.robot->getRobotName()[0];
+                    data.spawned = true;
 
+                    robots.push_back(data.robot);
+                    activeRobots.push_back(data.robot);
+                    positionToRobot[{x, y}] = data.robot;
+                    robotRespawnCount[data.robot] = 0;
+
+                    log(cout, outfile, data.robot->getRobotName() + " spawned at (" + to_string(x) + "," + to_string(y) + ")");
+                } else {
+                    bool spawnedElsewhere = false;
+                    for (int i = 0; i < field.size(); i++) {
+                        for (int j = 0; j < field[0].size(); j++) {
+                            if (field[i][j] == '.') {
+                                // move robot to new position
+                                data.robot->setPosition(i, j);
+                                field[i][j] = data.robot->getRobotName()[0];
+                                spawnedElsewhere = true;
+            
+                                log(cout, outfile, data.robot->getRobotName() + " spawned at (" + to_string(i) + "," + to_string(j) + ") instead (original spot occupied)");
+            
+                                // update data
+                                data.spawned = true;
+                                robots.push_back(data.robot);
+                                activeRobots.push_back(data.robot);
+                                positionToRobot[{i, j}] = data.robot;
+                                robotRespawnCount[data.robot] = 0;
+            
+                                break;
+                            }
+                        }
+                        if (spawnedElsewhere) break;
+                    }
+                    if (!spawnedElsewhere) {
+                        log(cout, outfile, data.robot->getRobotName() + " failed to spawn (no free spot found)");
+                    }
+                }
+            }
+        }
         // Upgrade replacements
         for (auto& [oldBot, newBot] : replaceNextTurn) {
             replaceAllReferences(oldBot, newBot);

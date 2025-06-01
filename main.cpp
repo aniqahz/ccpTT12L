@@ -40,6 +40,10 @@ int main()
       // Clean up robot memory
     for (auto r : robots)
         delete r;
+
+    for(auto& data: robSpawn)
+        delete data.robot;
+
     infile.close();
     outfile.close();
 
