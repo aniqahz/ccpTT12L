@@ -148,7 +148,8 @@ void GenericRobot::look(int dx,int dy,  vector<vector<char>>&field, ofstream& ou
       newX=PosX;
       newY=PosY; //if out of bounds, stay put
       cout<<name<<" : Drifting away out of bounds...Staying put"<<endl;
-    }};
+    }
+};
 
 //FIRE MECHANICS+++++++++++++++++++++++++++++
 void GenericRobot::fire(int dx, int dy, vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) {
