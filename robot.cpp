@@ -256,38 +256,35 @@ void GenericRobot::move(int dx, int dy, vector<vector<char>>& field, ofstream& o
         log(cout, outfile, name + " cannot move — out of bounds.");
     }
 }
-
-//JUMP BOT-------------------------
-jumpBot::jumpBot(string name,  vector<vector<char>>&field, ofstream& outfile): GenericRobot(name,0,0), jumps(3){
-  robotType="JumpBot";
-  hasMovingUpgrade=true;//set the robot type
-    
-  };
-
-  void jumpBot:: jump(int newX, int newY,  vector<vector<char>>& field, ofstream& outfile) {
-   if (jumps>0){
-    cout<<name<<" upgraded! to jumpBot!"<<endl;
-    if (newX>=0 && newX<field.size()&& newY>=0 && newY<field[0].size()){
-      PosX=newX;
-      PosY=newY;
-      jumps--;
-      log(cout, outfile, name + " jumped to position (" + to_string(PosX) + "," + to_string(PosY) + ")");
+  
+void GenericRobot::chooseUpgrade(string upgradeType, vector<vector<char>>& field, ofstream& outfile) {
+    if (upgradesUsed >= 3) {
+        log(cout, outfile, name + " cannot be upgraded anymore — upgrade limit reached.");
+        return;
     }
-    else{
-      cout<<name<<" Out of bounds! Cannot jump!"<<endl;
-    };
-   };
-  };
 
-     void jumpBot:: think( vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile)  {
-    if (jumps >0){
-      int newX = rand() % field.size();
-      int newY = rand() % field[0].size();
-      jump(newX,newY, field, outfile);
+    if (upgradeType == "JumpBot" && !hasMovingUpgrade) {
+        *this = jumpBot(name, field, outfile);  // Use slicing workaround
+        upgradesUsed++;
+    } else if (upgradeType == "HideBot" && !hasMovingUpgrade) {
+        // Implement HideBot and apply here
+        upgradesUsed++;
+    } else if (upgradeType == "LongShotBot" && !hasShootingUpgrade) {
+        // Implement LongShotBot and apply here
+        upgradesUsed++;
+    } else if (upgradeType == "SemiAutoBot" && !hasShootingUpgrade) {
+        // Implement SemiAutoBot and apply here
+        upgradesUsed++;
+    } else if (upgradeType == "ThirtyShotBot" && !hasShootingUpgrade) {
+        // Implement ThirtyShotBot and apply here
+        upgradesUsed++;
+    } else if (upgradeType == "ScoutBot" && !hasSeeingUpgrade) {
+        // Implement ScoutBot and apply here
+        upgradesUsed++;
+    } else if (upgradeType == "TrackBot" && !hasSeeingUpgrade) {
+        // Implement TrackBot and apply here
+        upgradesUsed++;
+    } else {
+        log(cout, outfile, name + " cannot choose " + upgradeType + " — already has upgrade in this category.");
     }
-    else{
-      log(cout, outfile, name + " has no jumps left! Falling back to generic thinking.");
-      GenericRobot::think(field, robots, outfile); //fallback to generic thinking
-    };
-
-  };
+}

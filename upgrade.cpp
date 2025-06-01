@@ -23,6 +23,41 @@ Phone: 011-6204 6219 | 011-6346 4323 | 019-7109905 | 019-966 0664
 #include <cstdlib>
 using namespace std;
 
+//JUMP BOT-------------------------
+jumpBot::jumpBot(string name,  vector<vector<char>>&field, ofstream& outfile): GenericRobot(name,0,0), jumps(3){
+  robotType="JumpBot";
+  hasMovingUpgrade=true;//set the robot type
+    
+  };
+
+  void jumpBot:: jump(int newX, int newY,  vector<vector<char>>& field, ofstream& outfile) {
+   if (jumps>0){
+    cout<<name<<" upgraded! to jumpBot!"<<endl;
+    if (newX>=0 && newX<field.size()&& newY>=0 && newY<field[0].size()){
+      PosX=newX;
+      PosY=newY;
+      jumps--;
+      log(cout, outfile, name + " jumped to position (" + to_string(PosX) + "," + to_string(PosY) + ")");
+    }
+    else{
+      cout<<name<<" Out of bounds! Cannot jump!"<<endl;
+    };
+   };
+  };
+
+     void jumpBot:: think( vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile)  {
+    if (jumps >0){
+      int newX = rand() % field.size();
+      int newY = rand() % field[0].size();
+      jump(newX,newY, field, outfile);
+    }
+    else{
+      log(cout, outfile, name + " has no jumps left! Falling back to generic thinking.");
+      GenericRobot::think(field, robots, outfile); //fallback to generic thinking
+    };
+
+  };
+
 // HIDEBOT------------------------------------------------------------------
 HideBot::HideBot(string name, int x, int y) : GenericRobot(name, x, y)
 {

@@ -100,6 +100,8 @@ class GenericRobot : public movingRobot, public shootingRobot, public lookRobot,
         void look(int dx,int dy,  vector<vector<char>>&field, ofstream& outfile) override ;
         void fire(int dx, int dy,  vector<vector<char>>&field,  vector<GenericRobot*>& robots, ofstream& outfile) override;
         void move(int dx, int dy,  vector<vector<char>>& field, ofstream& outfile) override ;
+        void chooseUpgrade(string upgradeType, vector<vector<char>>& field, ofstream& outfile); 
+
 };
 
 //JUMP BOT-------------------------
