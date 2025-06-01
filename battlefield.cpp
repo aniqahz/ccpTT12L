@@ -132,8 +132,6 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
         string turn = "Turn " + to_string(round + 1) + "/" + to_string(steps);
         log(cout, outfile, turn);
 
-        cout << "Total robots in vector: " << robots.size() << endl;
-
         for(auto& data : robSpawn)
         {
             if(!data.spawned && round+1 == data.spawnTurn)
