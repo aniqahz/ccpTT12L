@@ -16,11 +16,14 @@ Phone: 011-6204 6219 | 011-6346 4323 | 019-7109905 | 019-966 0664
 //UPGRADE ROBOT
 #include "upgrade.h"
 #include "robot.h"
+#include "battlefield.h"
 
 #include <iostream>
-#include <fstream>
 #include <string>
 #include <cstdlib>
+#include <vector>
+#include <utility> //for pair
+#include <fstream>
 using namespace std;
 
 //JUMP BOT-------------------------
@@ -65,7 +68,7 @@ HideBot::HideBot(string name, int x, int y) : GenericRobot(name, x, y)
     hasMovingUpgrade = true; // to set the robot type
 };
 
-void HideBot::startHide()
+void HideBot::startHide(ofstream& outfile)
 {
     if (hideChances > 0)
     {
@@ -96,13 +99,13 @@ LongShotBot::LongShotBot(string name, int x, int y) : GenericRobot(name, x, y)
     hasShootingUpgrade = true;
 };
 
-void LongShotBot::fire(int targetPointX, int targetPointY, const vector<vector<char>>& field)
+void LongShotBot::fire(int targetPointX, int targetPointY, const vector<vector<char>>& field, ofstream& outfile)
 {
     int distance = abs(targetPointX - PosX) + abs(targetPointY - PosY);
 
     if (distance <= maxDistance && !(targetPointX == PosX && targetPointY == PosY))
     {
-        log(cout, outfile, name + " is firing in a long shot at (" + to_string(PosX) + ", " + to_string(PosY) + ")." << endl;
+        log(cout, outfile, name + " is firing in a long shot at (" + to_string(PosX) + ", " + to_string(PosY) + ").");
     }
     else
     {
@@ -117,7 +120,7 @@ SemiAutoBot::SemiAutoBot(string name, int x, int y) : GenericRobot(name, x, y)
     hasShootingUpgrade = true;
 };
 
-void SemiAutoBot::fire(int distanceX, int distanceY, const vector<vector<char>>& field)
+void SemiAutoBot::fire(int distanceX, int distanceY, const vector<vector<char>>& field, ofstream& outfile)
 {
     if (PosX == distanceX && PosY == distanceY)
     {
@@ -134,7 +137,7 @@ void SemiAutoBot::fire(int distanceX, int distanceY, const vector<vector<char>>&
     shells--;
     log(cout, outfile, name + " fires three shots at (" + to_string(PosX) +"," + to_string(PosY) + ")" );
 
-    for (int i = 1; i <= 3; i++)
+    /*for (int i = 1; i <= 3; i++)
     {
         int hitChance = rand() % 100;
         if (hitChance < 70)
@@ -145,5 +148,6 @@ void SemiAutoBot::fire(int distanceX, int distanceY, const vector<vector<char>>&
         {
             log(cout, outfile," Shot " + i +": Miss the target!" );
         }
-    }
+    }*/
 }
+

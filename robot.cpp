@@ -16,6 +16,7 @@ Phone: 011-6204 6219 | 011-6346 4323 | 019-7109905 | 019-966 0664
 //base class of robot
 #include "robot.h" 
 #include "battlefield.h"
+#include "upgrade.h"
 
 #include <iostream>
 #include <string>
@@ -119,8 +120,14 @@ void GenericRobot::think( vector<vector<char>>&field, vector<GenericRobot*>& rob
         lastaction = STAY;
     break;
 
+    /*if (upgradesUsed < 3) {
+        int r = rand() % 3;
+        if (r == 0 && !hasShootingUpgrade) chooseUpgrade("SemiAutoBot", field, outfile);
+        else if (r == 1 && !hasMovingUpgrade) chooseUpgrade("JumpBot", field, outfile);
+        else if (r == 2 && !hasSeeingUpgrade) chooseUpgrade("TrackBot", field, outfile );
+    }
     };
-    log(cout, outfile, "");
+    log(cout, outfile, "");*/
 };
     
 
@@ -164,6 +171,7 @@ void GenericRobot::fire(int dx, int dy, vector<vector<char>>& field, vector<Gene
 
         return;
     }
+
 
     // Prevent firing at self or invalid direction
     if ((dx == 0 && dy == 0) || abs(dx) > 1 || abs(dy) > 1) {
@@ -219,6 +227,7 @@ void GenericRobot::fire(int dx, int dy, vector<vector<char>>& field, vector<Gene
         }
     }
 
+
     // If no robot found in the spot
     if (!hit) {
         log(cout, outfile, name + " fired at (" + to_string(targetX) + "," + to_string(targetY) + ") but no robot was there.");
@@ -257,34 +266,29 @@ void GenericRobot::move(int dx, int dy, vector<vector<char>>& field, ofstream& o
     }
 }
   
-void GenericRobot::chooseUpgrade(string upgradeType, vector<vector<char>>& field, ofstream& outfile) {
-    if (upgradesUsed >= 3) {
-        log(cout, outfile, name + " cannot be upgraded anymore — upgrade limit reached.");
-        return;
+void GenericRobot::chooseUpgrade(ofstream& outfile) {
+    if (upgradesUsed >= 3) return;
+
+    vector<string> possibleUpgrades;
+
+    if (!hasShootingUpgrade) {
+        possibleUpgrades.push_back("SemiAutoBot");
+        possibleUpgrades.push_back("LongShotBot");
+        possibleUpgrades.push_back("ThirtyShotBot");
     }
 
-    if (upgradeType == "JumpBot" && !hasMovingUpgrade) {
-        *this = jumpBot(name, field, outfile);  // Use slicing workaround
-        upgradesUsed++;
-    } else if (upgradeType == "HideBot" && !hasMovingUpgrade) {
-        // Implement HideBot and apply here
-        upgradesUsed++;
-    } else if (upgradeType == "LongShotBot" && !hasShootingUpgrade) {
-        // Implement LongShotBot and apply here
-        upgradesUsed++;
-    } else if (upgradeType == "SemiAutoBot" && !hasShootingUpgrade) {
-        // Implement SemiAutoBot and apply here
-        upgradesUsed++;
-    } else if (upgradeType == "ThirtyShotBot" && !hasShootingUpgrade) {
-        // Implement ThirtyShotBot and apply here
-        upgradesUsed++;
-    } else if (upgradeType == "ScoutBot" && !hasSeeingUpgrade) {
-        // Implement ScoutBot and apply here
-        upgradesUsed++;
-    } else if (upgradeType == "TrackBot" && !hasSeeingUpgrade) {
-        // Implement TrackBot and apply here
-        upgradesUsed++;
-    } else {
-        log(cout, outfile, name + " cannot choose " + upgradeType + " — already has upgrade in this category.");
+    if (!hasMovingUpgrade) {
+        possibleUpgrades.push_back("JumpBot");
+        possibleUpgrades.push_back("HideBot");
+    }
+
+    if (!hasSeeingUpgrade) {
+        possibleUpgrades.push_back("ScoutBot");
+        possibleUpgrades.push_back("TrackBot");
+    }
+
+    if (!possibleUpgrades.empty()) {
+        int choice = rand() % possibleUpgrades.size();
+        chooseUpgrade(possibleUpgrades[choice], field, outfile);
     }
 }

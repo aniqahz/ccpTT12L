@@ -15,11 +15,30 @@ Phone: 011-6204 6219 | 011-6346 4323 | 019-7109905 | 019-966 0664
 
 #ifndef upgrade_h
 #define upgrade_h
+
 #include <iostream>
-#include <vector>
 #include <string>
+#include <cstdlib>
+#include <vector>
+#include <utility> //for pair
+
 #include "robot.h"
+
 using namespace std;
+
+//JUMP BOT-------------------------
+class jumpBot : public  GenericRobot {
+    private :
+        int jumps; //max 3 jumps/match
+
+
+    public : 
+        jumpBot(string name,  vector<vector<char>>&field, ofstream& outfile);
+
+    void jump(int newX, int newY,  vector<vector<char>>& field, ofstream& outfile);
+    void think(vector<vector<char>>& field,vector<GenericRobot*>& robots, ofstream& outfile) override;
+    
+};
 
 // HIDEBOT(moving upgrade)-------------------------------------------------
 class HideBot : public GenericRobot
@@ -30,7 +49,7 @@ class HideBot : public GenericRobot
 
     public:
         HideBot(string name, int x, int y);
-        void startHide();
+        void startHide(ofstream& outfile);
         bool botCurrentlyHide() const;
         void endTurn();
         void think(vector<vector<char>>& field);
@@ -44,7 +63,7 @@ private:
 
 public:
     LongShotBot(string name, int x, int y);
-    void fire(int targetPointX, int targetPointY, const vector<vector<char>>& field);
+    void fire(int targetPointX, int targetPointY, const vector<vector<char>>& field, ofstream& outfile);
 };
 
 //SEMIAUTOBOT(shooting upgrade)-------------------------------------------------
@@ -55,7 +74,8 @@ protected:
 
 public:
     SemiAutoBot(string name, int x, int y);
-    void fire(int dx, int dy, const vector<vector<char>>& field);
+    void fire(int dx, int dy, const vector<vector<char>>& field, ofstream& outfile);
 };
+
 
 #endif

@@ -100,22 +100,8 @@ class GenericRobot : public movingRobot, public shootingRobot, public lookRobot,
         void look(int dx,int dy,  vector<vector<char>>&field, ofstream& outfile) override ;
         void fire(int dx, int dy,  vector<vector<char>>&field,  vector<GenericRobot*>& robots, ofstream& outfile) override;
         void move(int dx, int dy,  vector<vector<char>>& field, ofstream& outfile) override ;
-        void chooseUpgrade(string upgradeType, vector<vector<char>>& field, ofstream& outfile); 
+        void chooseUpgrade(ofstream& outfile); 
 
-};
-
-//JUMP BOT-------------------------
-class jumpBot : public  GenericRobot {
-    private :
-        int jumps; //max 3 jumps/match
-
-
-    public : 
-        jumpBot(string name,  vector<vector<char>>&field, ofstream& outfile);
-
-    void jump(int newX, int newY,  vector<vector<char>>& field, ofstream& outfile);
-    void think(vector<vector<char>>& field,vector<GenericRobot*>& robots, ofstream& outfile) override;
-    
 };
 
 #endif //end

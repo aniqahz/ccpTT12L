@@ -27,7 +27,7 @@ int main()
     int row = 0, col = 0, steps = 0, numRobot = 0;
 
     ifstream infile("Robot.txt");
-    ofstream outfile("output.txt");
+    ofstream outfile("output1.txt");
     if (!infile || !outfile)
     {
         cout << "Error opening file" << endl;
