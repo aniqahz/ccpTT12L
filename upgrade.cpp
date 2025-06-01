@@ -1,13 +1,15 @@
 #include "upgrade.h"
 #include "battlefield.h"
 
-// JUMP BOT
-jumpBot::jumpBot(string name, int x, int y)
+// JUMPBOT-----------------------------------------------------------------------------------
+JumpBot::JumpBot(string name, int x, int y)
     : GenericRobot(name, x, y), jumps(3) {
     robotType = "JumpBot";
+    hasMovingUpgrade = true;
+    upgradeActive = true; // Activate the upgrade
 }
 
-void jumpBot::jump(int newX, int newY, const vector<vector<char>>& field, ofstream& outfile) {
+void JumpBot::jump(int newX, int newY, const vector<vector<char>>& field, ofstream& outfile) {
     if (jumps > 0) {
         if (newX >= 0 && newX < field.size() && newY >= 0 && newY < field[0].size()) {
             setPosition(newX, newY);
@@ -21,7 +23,7 @@ void jumpBot::jump(int newX, int newY, const vector<vector<char>>& field, ofstre
     }
 }
 
-void jumpBot::think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) {
+void JumpBot::think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) {
     if (jumps > 0) {
         int newX = rand() % field.size();
         int newY = rand() % field[0].size();
@@ -31,33 +33,142 @@ void jumpBot::think(vector<vector<char>>& field, vector<GenericRobot*>& robots, 
     }
 }
 
-void jumpBot::revert() {
+void JumpBot::revert() {
     this->reset();
+    upgradeActive = false;
+    jumps = 3;  // Reset jumps for next use
+
 }
 
-// THIRTY SHOT BOT
-thirtyShotBot::thirtyShotBot(string name, int x, int y)
+// HIDEBOT------------------------------------------------------------------
+HideBot::HideBot(string name, int x, int y)
+    : GenericRobot(name, x, y), hideChances(2), botHidden(false) {
+    robotType = "HideBot";
+    hasMovingUpgrade = true;
+    upgradeActive = true; // Activate the upgrade
+}
+
+void HideBot::think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) {
+    if (hideChances > 0 && !botHidden) {
+        botHidden = true;
+        hideChances--;
+        log(cout, outfile, name + " is now hidden somewhere......!");
+    } else if (botHidden) {
+        log(cout, outfile, name + " remains hidden.");
+        botHidden = false;  // ends hiding after one turn
+    } else {
+        log(cout, outfile, name + " has no hide chances left.");
+    }
+
+    GenericRobot::think(field, robots, outfile);
+}
+
+void HideBot::revert(){
+    this->reset();
+    upgradeActive = false;
+    botHidden = false;
+    hideChances = 2;
+}
+
+// LONGSHOTBOT-------------------------------------------------------------------
+LongShotBot::LongShotBot(string name, int x, int y) : GenericRobot(name, x, y)
+{
+    robotType = "LongShotBot";
+    hasShootingUpgrade = true;
+    maxDistance = 3; // Set the maximum distance for long shots
+    shells = 10; // Set initial shells for LongShotBot
+    upgradeActive = true; // Activate the upgrade
+};
+
+void LongShotBot::think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) {
+    int targetX = PosX + (rand() % 7 - 3); // random offset within 3 tiles
+    int targetY = PosY + (rand() % 7 - 3);
+
+    int distance = abs(targetX - PosX) + abs(targetY - PosY);
+
+    if (distance <= maxDistance && !(targetX == PosX && targetY == PosY)) {
+        log(cout, outfile, name + " fires long shot at (" + to_string(targetX) + ", " + to_string(targetY) + ")");
+    } else {
+        log(cout, outfile, name + " failed to fire: out of range.");
+    }
+
+    GenericRobot::think(field, robots, outfile);
+}
+
+void LongShotBot::revert() {
+    this->reset();
+    upgradeActive = false;
+    maxDistance = 3;
+    shells = 10; // Reset shells for LongShotBot
+
+}
+
+// SEMIAUTOBOT---------------------------------------------------------------------
+SemiAutoBot::SemiAutoBot(string name, int x, int y) : GenericRobot(name, x, y)
+{
+    robotType = "SemiAutoBot";
+    hasShootingUpgrade = true;
+    shells = 10; // Set initial shells for SemiAutoBot
+    upgradeActive = true; // Activate the upgrade
+    lastaction = NONE; // Initialize last action to NONE
+};
+
+void SemiAutoBot::think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) {
+    if (shells <= 0) {
+        log(cout, outfile, name + " has no more shells!");
+    } else {
+        log(cout, outfile, name + " fires three quick shots.");
+        for (int i = 1; i <= 3; ++i) {
+            int hitChance = rand() % 100;
+            if (hitChance < 70) {
+                log(cout, outfile, " Shot " + to_string(i) + ": Hit the target!");
+            } else {
+                log(cout, outfile, " Shot " + to_string(i) + ": Missed!");
+            }
+        }
+        shells--;
+    }
+
+    GenericRobot::think(field, robots, outfile);
+}
+
+void SemiAutoBot::revert() {
+    this->reset();
+    upgradeActive = false;
+    shells = 10;
+
+}
+
+// THIRTYSHOTBOT-------------------------------------------------------------
+ThirtyShotBot::ThirtyShotBot(string name, int x, int y)
     : GenericRobot(name, x, y) {
     robotType = "ThirtyShotBot";
+    hasShootingUpgrade = true;
     setShells(30);
+    upgradeActive = true; // Activate the upgrade
 }
 
-void thirtyShotBot::think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) {
+void ThirtyShotBot::think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) {
     log(cout, outfile, name + " (ThirtyShotBot) has " + to_string(getShells()) + " shells.");
     GenericRobot::think(field, robots, outfile);
 }
 
-void thirtyShotBot::revert() {
+void ThirtyShotBot::revert() {
     this->reset();
+    upgradeActive = false;
+    setShells(30); // Reset shells to 30
+
 }
 
-// SCOUT BOT
-scoutBot::scoutBot(string name, int x, int y)
+// SCOUTBOT-------------------------------------------------------------------
+ScoutBot::ScoutBot(string name, int x, int y)
     : GenericRobot(name, x, y), scanUses(3) {
     robotType = "ScoutBot";
+    hasSeeingUpgrade = true;
+    upgradeActive = true; // Activate the upgrade
 }
 
-void scoutBot::think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) {
+void ScoutBot::think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) {
     if (scanUses > 0) {
         log(cout, outfile, name + " uses full-field scan (ScoutBot).");
         for (const auto& row : field) {
@@ -71,17 +182,22 @@ void scoutBot::think(vector<vector<char>>& field, vector<GenericRobot*>& robots,
     GenericRobot::think(field, robots, outfile);
 }
 
-void scoutBot::revert() {
+void ScoutBot::revert() {
     this->reset();
+    upgradeActive = false;
+    scanUses =3;
 }
 
-// TRACK BOT
-trackBot::trackBot(string name, int x, int y)
+// TRACKBOT-----------------------------------------------------------------------------
+TrackBot::TrackBot(string name, int x, int y)
     : GenericRobot(name, x, y), trackers(3) {
     robotType = "TrackBot";
+    hasSeeingUpgrade = true;
+    trackedEnemies.clear();
+    upgradeActive = true;
 }
 
-void trackBot::think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) {
+void TrackBot::think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) {
     if (trackers > 0) {
         for (GenericRobot* other : robots) {
             if (other && other != this && other->getAliveStatus()) {
@@ -103,6 +219,9 @@ void trackBot::think(vector<vector<char>>& field, vector<GenericRobot*>& robots,
     GenericRobot::think(field, robots, outfile);
 }
 
-void trackBot::revert() {
+void TrackBot::revert() {
     this->reset();
+    upgradeActive = false;
+    trackers= 3;
+    trackedEnemies.clear();
 }

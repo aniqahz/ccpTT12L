@@ -26,7 +26,7 @@ void baseRobot::takeDamage(vector<vector<char>>& field, ofstream& outfile) {
     if (!isAlive) return;
 
     loseLife();
-    markDead(); // isAlive = false
+    markDead();
 
     // Clear from battlefield
     field[PosX][PosY] = '.';
@@ -34,6 +34,7 @@ void baseRobot::takeDamage(vector<vector<char>>& field, ofstream& outfile) {
 
     if (remainingLives > 0) {
         log(cout, outfile, getRobotName() + " was HIT and DESTROYED! Remaining lives: " + to_string(remainingLives));
+        log(cout, outfile, getRobotName() + " has been destroyed and removed from the battlefield.");
 
         GenericRobot* derived = dynamic_cast<GenericRobot*>(this);
         if (derived && !derived->getIsQueuedForRespawn()) {
@@ -46,6 +47,7 @@ void baseRobot::takeDamage(vector<vector<char>>& field, ofstream& outfile) {
         log(cout, outfile, getRobotName() + " is permanently dead.");
     }
 }
+
 void baseRobot::loseLife() {
     if (remainingLives > 0) {
         remainingLives--;
@@ -90,7 +92,7 @@ GenericRobot::GenericRobot(string rName, int x, int y):
 { 
     name = rName; //set the robot name
     robotType = "GenericRobot"; //set the robot type
-    isAlive = true; //alive status
+    //isAlive = true; //alive status
 };
    
 //THINK MECHANICS++++++++++++++++++++++++++++++++++++++++++
@@ -171,69 +173,75 @@ void GenericRobot::look(int dx,int dy,  vector<vector<char>>&field, ofstream& ou
 void GenericRobot::fire(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) {
     if (shells <= 0) {
         log(cout, outfile, name + ": Out of shells! Self-destructing now X___X");
+
         loseLife();
         markDead();
 
         field[PosX][PosY] = '.';
         positionToRobot.erase({PosX, PosY});
 
-        if (remainingLives > 0 && !isQueuedForRespawn) {
+        log(cout, outfile, name + " has self-destructed due to running out of shells.");
+        log(cout, outfile, name + " remaining lives: " + to_string(remainingLives));
+
+        if (remainingLives > 0 && !getIsQueuedForRespawn()) {
             respawnQueue.push(this);
-            isQueuedForRespawn = true;
+            setIsQueuedForRespawn(true);
             log(cout, outfile, name + " is added to respawn queue.");
         } else if (remainingLives == 0) {
-            log(cout, outfile, name + " has been removed from the battlefield due to self-destruction. Remaining lives: 0");
-            log(cout, outfile, name + " is permanently dead.");
+            log(cout, outfile, name + " has no lives left and is permanently dead.");
         }
+
         return;
     }
 
     shells--;
+
+    int dx = rand() % 3 - 1;
+    int dy = rand() % 3 - 1;
+
+    if (dx == 0 && dy == 0) {
+        log(cout, outfile, name + " tried to fire at an invalid direction.");
+        return;
+    }
+
+    int targetX = PosX + dx;
+    int targetY = PosY + dy;
+
+    if (targetX < 0 || targetX >= field.size() || targetY < 0 || targetY >= field[0].size()) {
+        log(cout, outfile, name + ": Target out of bounds.");
+        return;
+    }
+
     bool hit = false;
+    for (GenericRobot* robot : robots) {
+        if (robot == nullptr || robot == this || !robot->getAliveStatus()) continue;
 
-    for (int i = -1; i <= 1 && !hit; i++) {
-        for (int j = -1; j <= 1 && !hit; j++) {
-            if (i == 0 && j == 0) continue;
+        auto [rx, ry] = robot->getPosition();
+        if (rx == targetX && ry == targetY) {
+            int chance = rand() % 100;
+            if (chance < 70) {
+                robot->takeDamage(field, outfile);
 
-            int targetX = PosX + i;
-            int targetY = PosY + j;
-
-            if (targetX < 0 || targetX >= field.size() || targetY < 0 || targetY >= field[0].size()) continue;
-
-            for (GenericRobot* robot : robots) {
-                if (robot == nullptr) continue; // Defensive: skip null pointers
-                if (robot == this) continue;    // Don't shoot self
-                if (!robot->getAliveStatus()) continue; // Only alive robots 
-                    
-                auto [rx, ry] = robot->getPosition();
-                    
-                if (rx == targetX && ry == targetY) {
-                    int chance = rand() % 100;
-                        
-                    if (chance < 70) {
-                        log(cout, outfile, name + " fired at (" + to_string(rx) + "," + to_string(ry) + ") — HIT " + robot->getRobotName() + "!");
-
-                        // Remove from field and position map immediately
-                        field[rx][ry] = '.';
-                        positionToRobot.erase({rx, ry});
-
-                        robot->takeDamage(field, outfile);
-                        awardUpgrade(robots, field, outfile);
-
-                        hit = true;
-                    } else {
-                        log(cout, outfile, name + " MISSED " + robot->getRobotName() + " at (" + to_string(rx) + "," + to_string(ry) + ")");
-                        hit = true;
-                    }
-                     break;
+                if (!robot->getAliveStatus()) {
+                    field[rx][ry] = '.';
+                    positionToRobot.erase({rx, ry});
                 }
+
+                awardUpgrade(robots, field, outfile);
+            } else {
+                log(cout, outfile, name + " MISSED " + robot->getRobotName() + " at (" + to_string(rx) + "," + to_string(ry) + ")");
             }
-        }
-        if (!hit) {
-        log(cout, outfile, name + " fired but no robot was in range.");
+
+            hit = true;
+            break;
         }
     }
+
+    if (!hit) {
+        log(cout, outfile, name + " fired at (" + to_string(targetX) + "," + to_string(targetY) + ") but no robot was there.");
+    }
 }
+
   
 //MOVE MECHANICS++++++++++++++++++++++++++++++++++++++++++++
 void GenericRobot::move(int dx, int dy, vector<vector<char>>& field, ofstream& outfile){
@@ -281,6 +289,8 @@ void GenericRobot::reset() {
 
 //Upgrade------------------------------------------------------------------
 void GenericRobot::awardUpgrade(vector<GenericRobot*>& activeRobots, vector<vector<char>>& field, ofstream& outfile) {
+    if (upgradesUsed >= 3 || upgradeActive) return;
+    
     if (upgradesUsed >= 3) {
         log(cout, outfile, name + " has maxed out all upgrades.");
         return;
@@ -302,24 +312,31 @@ void GenericRobot::awardUpgrade(vector<GenericRobot*>& activeRobots, vector<vect
     int y = PosY;
 
     if (category == "Moving") {
-        string selected = "Jump";
+        vector<string> choices = {"Jump", "Hide"};
+        string selected = choices[rand() % choices.size()];
         log(cout, outfile, name + " received Moving upgrade: " + selected);
-        upgraded = new jumpBot(name, x, y);
+
+        if (selected == "Jump") upgraded = new JumpBot(name, x, y);
+        else if (selected == "Hide") upgraded = new HideBot(name, x, y);
         upgraded->hasMovingUpgrade = true;
 
     } else if (category == "Shooting") {
-        string selected = "ThirtyShot";
+        vector<string> choices = {"LongShot","SemiAuto","ThirtyShot"};
+        string selected = choices[rand() % choices.size()];
         log(cout, outfile, name + " received Shooting upgrade: " + selected);
-        upgraded = new thirtyShotBot(name, x, y);
-        upgraded->hasShootingUpgrade = true;
+
+        if (selected == "LongShot") upgraded = new LongShotBot(name, x, y);
+        else if (selected == "SemiAuto") upgraded = new SemiAutoBot(name, x, y);
+        else if (selected == "ThirtyShot") upgraded = new ThirtyShotBot(name, x, y);
+        upgraded->hasSeeingUpgrade = true;
 
     } else if (category == "Seeing") {
         vector<string> choices = {"Scout", "Track"};
         string selected = choices[rand() % choices.size()];
         log(cout, outfile, name + " received Seeing upgrade: " + selected);
 
-        if (selected == "Scout") upgraded = new scoutBot(name, x, y);
-        else if (selected == "Track") upgraded = new trackBot(name, x, y);
+        if (selected == "Scout") upgraded = new ScoutBot(name, x, y);
+        else if (selected == "Track") upgraded = new TrackBot(name, x, y);
         upgraded->hasSeeingUpgrade = true;
     }
 
@@ -334,6 +351,8 @@ void GenericRobot::awardUpgrade(vector<GenericRobot*>& activeRobots, vector<vect
         if (!upgraded->hasMovingUpgrade) upgraded->hasMovingUpgrade = hasMovingUpgrade;
         if (!upgraded->hasShootingUpgrade) upgraded->hasShootingUpgrade = hasShootingUpgrade;
         if (!upgraded->hasSeeingUpgrade) upgraded->hasSeeingUpgrade = hasSeeingUpgrade;
+
+        upgraded->upgradeActive = true;
 
         field[PosX][PosY] = name[0];
         positionToRobot[{PosX, PosY}] = upgraded;

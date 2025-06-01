@@ -27,14 +27,15 @@ int main()
 
     vector<vector<char>> field(row, vector<char>(col, '.'));
     vector<GenericRobot*> robots; //storing robots in a vector
+    vector<RobotSpawn> robSpawn;
 
     string line;
     getline(infile, line); // robots
     sscanf(line.c_str(), "robots: %d", &numRobot);
-    robotPos(infile, outfile, field, numRobot,robots);
+    robotPos(infile, outfile, field, numRobot, robSpawn, steps, robots);
     displayField(field);
 
-    simulation(outfile, field, steps, robots);
+    simulation(outfile, field, steps, robSpawn, robots);
 
       // Clean up robot memory
     for (auto r : robots)

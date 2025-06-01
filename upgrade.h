@@ -8,38 +8,76 @@
 
 using namespace std;
 
-class jumpBot : public GenericRobot {
+// JUMPBOT(moving upgrade)-------------------------------------------------
+class JumpBot : public GenericRobot {
 private:
     int jumps;
 public:
-    jumpBot(string name, int x, int y);
+    JumpBot(string name, int x, int y);
     void jump(int newX, int newY, const vector<vector<char>>& field, ofstream& outfile);
     void think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) override;
     void revert() override;
 };
 
-class thirtyShotBot : public GenericRobot {
+// HIDEBOT(moving upgrade)-------------------------------------------------
+class HideBot : public GenericRobot
+{
+    private:
+        int hideChances;
+        bool botHidden = false;
+
+    public:
+        HideBot(string name, int x, int y);
+        void think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) override;
+        void revert() override;
+};
+
+// LONGSHOTBOT(shooting upgrade)----------------------------------------------
+class LongShotBot : public GenericRobot
+{
+private:
+    int maxDistance = 3;
 public:
-    thirtyShotBot(string name, int x, int y);
+    LongShotBot(string name, int x, int y);
+    void think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) override;
+    void revert() override;
+
+};
+
+//SEMIAUTOBOT(shooting upgrade)-------------------------------------------------
+class SemiAutoBot : public GenericRobot
+{
+public:
+    SemiAutoBot(string name, int x, int y);
     void think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) override;
     void revert() override;
 };
 
-class scoutBot : public GenericRobot {
+//THIRTYSHOTBOT(shooting upgrade)-------------------------------------------------
+class ThirtyShotBot : public GenericRobot {
+public:
+    ThirtyShotBot(string name, int x, int y);
+    void think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) override;
+    void revert() override;
+};
+
+//SCOUTBOT(seeing upgrade)-------------------------------------------------
+class ScoutBot : public GenericRobot {
 private:
     int scanUses;
 public:
-    scoutBot(string name, int x, int y);
+    ScoutBot(string name, int x, int y);
     void think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) override;
     void revert() override;
 };
 
-class trackBot : public GenericRobot {
+//TRACKBOT(seeing upgrade)-------------------------------------------------
+class TrackBot : public GenericRobot {
 private:
     int trackers;
     vector<pair<string, pair<int, int>>> trackedEnemies;
 public:
-    trackBot(string name, int x, int y);
+    TrackBot(string name, int x, int y);
     void think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) override;
     void revert() override;
 };
