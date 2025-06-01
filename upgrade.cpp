@@ -1,130 +1,108 @@
 #include "upgrade.h"
-#include "mybattlefield.h"
+#include "battlefield.h"
 
-// ---------------- jumpBot ----------------
-
-jumpBot::jumpBot(string name, const vector<vector<char>> &field)
-    : GenericRobot(name, 0, 0), jumps(3) {
+// JUMP BOT
+jumpBot::jumpBot(string name, int x, int y)
+    : GenericRobot(name, x, y), jumps(3) {
     robotType = "JumpBot";
 }
 
-void jumpBot::setPosition(int x, int y) {
-    PosX = x;
-    PosY = y;
-}
-
-void jumpBot::jump(int newX, int newY, const vector<vector<char>> &field, ofstream& outfile) {
-    logStatus(outfile);
+void jumpBot::jump(int newX, int newY, const vector<vector<char>>& field, ofstream& outfile) {
     if (jumps > 0) {
         if (newX >= 0 && newX < field.size() && newY >= 0 && newY < field[0].size()) {
-            PosX = newX;
-            PosY = newY;
+            setPosition(newX, newY);
             jumps--;
-            log(cout,outfile, "Jumped to (" + to_string(PosX) + "," + to_string(PosY) + ")" );
+            log(cout, outfile, name + " jumped to (" + to_string(PosX) + "," + to_string(PosY) + ")");
         } else {
-            outfile << "Out of bounds! Cannot jump!" << endl;
+            log(cout, outfile, name + " tried to jump out of bounds.");
         }
     } else {
-        outfile << "No jumps left!" << endl;
+        log(cout, outfile, name + " has no jumps left.");
     }
 }
 
-void jumpBot::think(vector<vector<char>> &field, ofstream& outfile) {
+void jumpBot::think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) {
     if (jumps > 0) {
         int newX = rand() % field.size();
         int newY = rand() % field[0].size();
         jump(newX, newY, field, outfile);
     } else {
-        outfile << "JumpBot has no jumps left. Reverting to default behavior." << endl;
-        GenericRobot::think(field, outfile);
+        GenericRobot::think(field, robots, outfile);
     }
 }
 
-// ---------------- thirtyShotBot ----------------
-thirtyShotBot::thirtyShotBot(string name, const vector<vector<char>>& field)
-    : GenericRobot(name, 0, 0){
+void jumpBot::revert() {
+    this->reset();
+}
+
+// THIRTY SHOT BOT
+thirtyShotBot::thirtyShotBot(string name, int x, int y)
+    : GenericRobot(name, x, y) {
     robotType = "ThirtyShotBot";
-    shells = 30;
+    setShells(30);
 }
 
-void thirtyShotBot::setPosition(int x, int y){
-    PosX = x;
-    PosY = y;
+void thirtyShotBot::think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) {
+    log(cout, outfile, name + " (ThirtyShotBot) has " + to_string(getShells()) + " shells.");
+    GenericRobot::think(field, robots, outfile);
 }
 
-void thirtyShotBot::think(vector<vector<char>>& field, ofstream& outfile) {
-    outfile << name << " has 30 shells and is thinking..." << endl;
-    outfile << name << " (ThirtyShotBot) has " << shells << " shells." << endl;
-    logStatus(outfile);
-    GenericRobot::think(field, outfile);
+void thirtyShotBot::revert() {
+    this->reset();
 }
 
-// ---------------- scoutBot ----------------
-scoutBot::scoutBot(string name, const vector<vector<char>>& field)
-    : GenericRobot(name, 0, 0), scanUses(3) {
+// SCOUT BOT
+scoutBot::scoutBot(string name, int x, int y)
+    : GenericRobot(name, x, y), scanUses(3) {
     robotType = "ScoutBot";
 }
 
-void scoutBot::setPosition(int x, int y) {
-    PosX = x;
-    PosY = y;
-}
-
-void scoutBot::think(vector<vector<char>>& field, ofstream& outfile) {
-    logStatus(outfile);
-    outfile << name << " has " << scanUses << " scout scan(s) remaining." << endl;
-
+void scoutBot::think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) {
     if (scanUses > 0) {
-        outfile << name << " uses full-field scan (ScoutBot ability)!" << endl;
+        log(cout, outfile, name + " uses full-field scan (ScoutBot).");
         for (const auto& row : field) {
             string line(row.begin(), row.end());
-            outfile << line << endl;
+            log(cout, outfile, line);
         }
         scanUses--;
     } else {
-        outfile << name << " has no scans left. Thinking normally." << endl;
+        log(cout, outfile, name + " has no scans left.");
     }
-
-    GenericRobot::think(field, outfile);
+    GenericRobot::think(field, robots, outfile);
 }
 
-// ---------------- trackBot ----------------
-trackBot::trackBot(string name, const vector<vector<char>>& field)
-    : GenericRobot(name, 0, 0), trackers(3) {
+void scoutBot::revert() {
+    this->reset();
+}
+
+// TRACK BOT
+trackBot::trackBot(string name, int x, int y)
+    : GenericRobot(name, x, y), trackers(3) {
     robotType = "TrackBot";
 }
 
-void trackBot::setPosition(int x, int y) {
-    PosX = x;
-    PosY = y;
-}
-
-void trackBot::think(vector<vector<char>>& field, ofstream& outfile) {
-    logStatus(outfile);
-    outfile << name << " has " << trackers << " tracker(s) remaining." << endl;
-
+void trackBot::think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) {
     if (trackers > 0) {
-        for (GenericRobot* other : activeRobots) {
-            if (other == this || !other->getAliveStatus()) continue;
-            auto [x, y] = other->getPosition();
-
-            // Can see 1-tile radius
-            if (abs(PosX - x) <= 1 && abs(PosY - y) <= 1) {
-                trackers--;
-                trackedEnemies.push_back({ other->getName(), {x, y} });
-                outfile << name << " has tracked " << other->getName() << " at (" << x << "," << y << ")" << endl;
-                break;
+        for (GenericRobot* other : robots) {
+            if (other && other != this && other->getAliveStatus()) {
+                auto [x, y] = other->getPosition();
+                if (abs(PosX - x) <= 1 && abs(PosY - y) <= 1) {
+                    trackers--;
+                    trackedEnemies.push_back({ other->getRobotName(), {x, y} });
+                    log(cout, outfile, name + " tracked " + other->getRobotName() + " at (" + to_string(x) + "," + to_string(y) + ")");
+                    break;
+                }
             }
         }
     }
 
-    else {outfile << name << " has no trackers left." << endl;}
-
-    // Always log known tracked enemy positions
-    for (auto& [trackedName, pos] : trackedEnemies) {
-        outfile << name << " sees tracked " << trackedName << " at (" << pos.first << "," << pos.second << ")" << endl;
+    for (const auto& [trackedName, pos] : trackedEnemies) {
+        log(cout, outfile, name + " sees tracked " + trackedName + " at (" + to_string(pos.first) + "," + to_string(pos.second) + ")");
     }
 
-    GenericRobot::think(field, outfile);
+    GenericRobot::think(field, robots, outfile);
 }
 
+void trackBot::revert() {
+    this->reset();
+}

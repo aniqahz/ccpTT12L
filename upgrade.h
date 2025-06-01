@@ -1,11 +1,9 @@
 #ifndef UPGRADE_H
 #define UPGRADE_H
 
-#include "myrobot.h"
-#include <iostream>
-#include <string>
-#include <cstdlib>
+#include "robot.h"
 #include <vector>
+#include <string>
 #include <fstream>
 
 using namespace std;
@@ -13,42 +11,37 @@ using namespace std;
 class jumpBot : public GenericRobot {
 private:
     int jumps;
-
 public:
-    jumpBot(string name, const vector<vector<char>> &field);
-    void jump(int newX, int newY, const vector<vector<char>> &field, ofstream& outfile);
-    void think(vector<vector<char>> &field, ofstream& outfile) override;
-    void setPosition(int x, int y) override;
+    jumpBot(string name, int x, int y);
+    void jump(int newX, int newY, const vector<vector<char>>& field, ofstream& outfile);
+    void think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) override;
+    void revert() override;
 };
 
 class thirtyShotBot : public GenericRobot {
 public:
-    thirtyShotBot(string name, const vector<vector<char>> &field);
-    void think(vector<vector<char>>& field, ofstream& outfile) override;
-    void setPosition(int x, int y) override;
-
+    thirtyShotBot(string name, int x, int y);
+    void think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) override;
+    void revert() override;
 };
 
 class scoutBot : public GenericRobot {
 private:
     int scanUses;
-
 public:
-    scoutBot(string name, const vector<vector<char>>& field);
-    void think(vector<vector<char>>& field, ofstream& outfile) override;
-    void setPosition(int x, int y) override;
+    scoutBot(string name, int x, int y);
+    void think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) override;
+    void revert() override;
 };
 
 class trackBot : public GenericRobot {
 private:
     int trackers;
     vector<pair<string, pair<int, int>>> trackedEnemies;
-
 public:
-    trackBot(string name, const vector<vector<char>>& field);
-    void think(vector<vector<char>>& field, ofstream& outfile) override;
-    void setPosition(int x, int y) override;
+    trackBot(string name, int x, int y);
+    void think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) override;
+    void revert() override;
 };
-
 
 #endif

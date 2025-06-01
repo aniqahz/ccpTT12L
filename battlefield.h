@@ -1,6 +1,8 @@
 #ifndef BATTLEFIELD_H
 #define BATTLEFIELD_H
 
+#include "robot.h" 
+#include "upgrade.h"
 #include<iostream>
 #include<vector>
 #include<string>
@@ -11,7 +13,9 @@
 #include<chrono>
 #include<thread>
 #include<sstream>
-#include "robot.h" 
+#include<queue>
+#include<algorithm>
+#include <map>
 
 using namespace std;
 
@@ -21,4 +25,11 @@ bool config(ifstream& infile, int& row, int& col, int& steps);
 void robotPos(ifstream& infile, ofstream& outfile, vector<vector<char>>& field, int numRobot,vector<GenericRobot*>& robots);
 void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vector<GenericRobot*> &robots);
 
+extern map<pair<int, int>, GenericRobot*> positionToRobot;
+extern vector<GenericRobot*> activeRobots;
+extern queue<GenericRobot*> respawnQueue;
+extern vector<GenericRobot*> revertNextTurn;
+void processRespawn(vector<vector<char>>& field, ofstream& outfile);
+extern map<GenericRobot*, int> robotRespawnCount;
+extern vector<pair<GenericRobot*, GenericRobot*>> replaceNextTurn;
 #endif

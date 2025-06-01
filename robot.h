@@ -1,104 +1,110 @@
-//base class of robot
-#ifndef robot_h //if robot_h is not defined
-#define robot_h //define it to prevent multiple inclusions
+#ifndef ROBOT_H
+#define ROBOT_H
 
 #include <iostream>
 #include <string>
 #include <cstdlib>
 #include <vector>
-#include <utility> //for pair
+#include <utility>
+#include <algorithm>
+#include <fstream>
+
 using namespace std;
 
-enum actionType{NONE, FIRE, LOOK, MOVE, STAY};
-class GenericRobot; //forward declaration
+enum actionType { NONE, FIRE, LOOK, MOVE, STAY };
 
-//BASE ROBOT---------------------------------------------------------------
-class baseRobot{
-    protected:
-        //position, type,name, capabilities, one action per turn
-        string name;
-        string robotType; //type of bot (generic, etc...)
-        int PosX,PosY; //position of bot currently
-        bool isAlive; 
-        int remainingLives; 
-   
-    public:
-        baseRobot(){};
-        baseRobot(int x, int y) ;
-        virtual ~baseRobot() {}
-        pair<int,int> getPosition() const;
-        void setPosition(int x,int y);
-        bool getAliveStatus() const;
-        string getRobotType() const;
-        virtual void takeDamage(ofstream& outfile);    
-        string getrobotname() const { return name; }
-        int getRemainingLives() const { return remainingLives; }
-     
-     
+class GenericRobot; // forward declaration for circular dependency
+
+// --- BASE ROBOT ------------------------------------------------------------
+class baseRobot {
+protected:
+    string name;
+    string robotType;
+    int PosX, PosY;
+    bool isAlive;
+    int remainingLives;
+
+public:
+    baseRobot() = default;
+    baseRobot(int x, int y);
+    virtual ~baseRobot() {}
+
+    pair<int, int> getPosition() const;
+    virtual void setPosition(int x, int y);
+    bool getAliveStatus() const;
+    void setAliveStatus(bool status);
+    string getRobotType() const;
+    string getRobotName() const { return name; }
+    int getRemainingLives() const { return remainingLives; }
+
+    virtual void takeDamage(vector<vector<char>>& field, ofstream& outfile);
+    void loseLife();
+    void markDead();
+    virtual void reset() = 0;
 };
 
-//MOVING ROBOT-------------------------------------------------------------
+// --- MOVING ROBOT ----------------------------------------------------------
 class movingRobot : virtual public baseRobot {
-    public:
-        movingRobot(int x,int y);
-        virtual void move(int dx, int dy,  vector<vector<char>>& field, ofstream& outfile)=0;
+public:
+    movingRobot(int x, int y);
+    virtual void move(int dx, int dy, vector<vector<char>>& field, ofstream& outfile) = 0;
 };
 
-//SHOOTING ROBOT----------------------------------------------------
+// --- SHOOTING ROBOT --------------------------------------------------------
 class shootingRobot : virtual public baseRobot {
-    public :
-        shootingRobot(int x,int y);
-        virtual void fire(int dx, int dy,  vector<vector<char>>&field,  vector<GenericRobot*>& robots, ofstream& outfile)=0;
+public:
+    shootingRobot(int x, int y);
+    virtual void fire(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) = 0;
 };
 
-//SEEING ROBOT----------------------------------------------------------
+// --- SEEING ROBOT ----------------------------------------------------------
 class lookRobot : virtual public baseRobot {
-    public:
-        lookRobot(int x,int y);
-        virtual void look(int dx, int dy,  vector<vector<char>>&field, ofstream& outfile)=0;
+public:
+    lookRobot(int x, int y);
+    virtual void look(int dx, int dy, vector<vector<char>>& field, ofstream& outfile) = 0;
 };
 
-//THINKING ROBOT--------------------------------------------------------
+// --- THINKING ROBOT --------------------------------------------------------
 class thinkingRobot : virtual public baseRobot {
-    public:
-        thinkingRobot(int x,int y);
-        virtual void think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) = 0;
-        virtual ~thinkingRobot() {}
+public:
+    thinkingRobot(int x, int y);
+    virtual void think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) = 0;
+    virtual ~thinkingRobot() {}
 };
 
- //GENERIC ROBOT----------------------------------------------------
+// --- GENERIC ROBOT ---------------------------------------------------------
 class GenericRobot : public movingRobot, public shootingRobot, public lookRobot, public thinkingRobot {
-    protected:
-        int shells; //max 10 per match
-        int lives;  //max 3 respawns
-        int maxLives = 3;
-        int upgradesUsed;
-        bool hasMovingUpgrade;
-        bool hasShootingUpgrade;
-        bool hasSeeingUpgrade;
-    
-    public:
-    //getter and setter methods
-        actionType lastaction = NONE; //initial action 
-        GenericRobot(string rName, int x, int y);
-        void think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile ) override; //decides what action to take
-        void look(int dx,int dy,  vector<vector<char>>&field, ofstream& outfile) override ;
-        void fire(int dx, int dy,  vector<vector<char>>&field,  vector<GenericRobot*>& robots, ofstream& outfile) override;
-        void move(int dx, int dy,  vector<vector<char>>& field, ofstream& outfile) override ;
+protected:
+    int shells;
+    int upgradesUsed;
+    bool hasMovingUpgrade;
+    bool hasShootingUpgrade;
+    bool hasSeeingUpgrade;
+    bool isQueuedForRespawn;
+    bool upgradeActive;
+
+public:
+    actionType lastaction = NONE;
+
+    GenericRobot(string rName, int x, int y);
+
+    // Core actions
+    void think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) override;
+    void look(int dx, int dy, vector<vector<char>>& field, ofstream& outfile) override;
+    void fire(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) override;
+    void move(int dx, int dy, vector<vector<char>>& field, ofstream& outfile) override;
+    void reset() override;
+
+    // Upgrade system
+    void awardUpgrade(vector<GenericRobot*>& activeRobots, vector<vector<char>>& field, ofstream& outfile);
+    virtual void revert() {} // For temporary upgrades
+
+    // Accessors
+    bool getIsQueuedForRespawn() const { return isQueuedForRespawn; }
+    void setIsQueuedForRespawn(bool status) { isQueuedForRespawn = status; }
+
+    int getShells() const { return shells; }
+    void setShells(int s) { shells = s; }
 };
 
-//JUMP BOT-------------------------
-class jumpBot : public  GenericRobot {
-    private :
-        int jumps; //max 3 jumps/match
-
-
-    public : 
-        jumpBot(string name,  vector<vector<char>>&field, ofstream& outfile);
-
-    void jump(int newX, int newY,  vector<vector<char>>& field, ofstream& outfile);
-    void think(vector<vector<char>>& field,vector<GenericRobot*>& robots, ofstream& outfile) override;
-    
-};
-
-#endif //end
+#endif

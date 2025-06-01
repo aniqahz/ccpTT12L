@@ -12,6 +12,7 @@
                 "main.cpp",
                 "battlefield.cpp",
                 "robot.cpp",
+                "upgrade.cpp",
                 "-o",
                 "${fileDirname}\\main.exe"
             ],

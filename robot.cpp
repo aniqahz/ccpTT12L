@@ -1,6 +1,7 @@
 //base class of robot
 #include "robot.h" 
 #include "battlefield.h"
+#include "upgrade.h"
 
 #include <iostream>
 #include <string>
@@ -17,15 +18,45 @@ baseRobot::baseRobot(int x, int y) : PosX(x), PosY(y), isAlive(true), remainingL
 pair<int,int> baseRobot:: getPosition() const {return {PosX,PosY};}
 void baseRobot:: setPosition(int x,int y){PosX=x;PosY=y; }
 bool baseRobot:: getAliveStatus() const { return isAlive; }
+void baseRobot::setAliveStatus(bool status) {isAlive = status;}
 string baseRobot:: getRobotType() const { return robotType; }
 
-void baseRobot::takeDamage(ofstream& outfile) {
+//Damage MECHANICS++++++++++++++++++++++++++++++++++++++++++++
+void baseRobot::takeDamage(vector<vector<char>>& field, ofstream& outfile) {
+    if (!isAlive) return;
+
+    loseLife();
+    markDead(); // isAlive = false
+
+    // Clear from battlefield
+    field[PosX][PosY] = '.';
+    positionToRobot.erase({PosX, PosY});
+
+    if (remainingLives > 0) {
+        log(cout, outfile, getRobotName() + " was HIT and DESTROYED! Remaining lives: " + to_string(remainingLives));
+
+        GenericRobot* derived = dynamic_cast<GenericRobot*>(this);
+        if (derived && !derived->getIsQueuedForRespawn()) {
+            respawnQueue.push(derived);
+            derived->setIsQueuedForRespawn(true);
+            log(cout, outfile, getRobotName() + " is added to respawn queue.");
+        }
+    } else {
+        log(cout, outfile, getRobotName() + " was HIT and DESTROYED! Remaining lives: 0");
+        log(cout, outfile, getRobotName() + " is permanently dead.");
+    }
+}
+void baseRobot::loseLife() {
     if (remainingLives > 0) {
         remainingLives--;
-        if (remainingLives <= 0) {
+        if (remainingLives == 0) {
             isAlive = false;
         }
     }
+}
+
+void baseRobot::markDead(){
+    isAlive = false;
 }
 
 //MOVING ROBOT-------------------------------------------------------------
@@ -49,12 +80,13 @@ GenericRobot::GenericRobot(string rName, int x, int y):
     thinkingRobot(x, y),
        
     shells(10), // max 10 shells
-    lives(3), // max 3 lives
-    maxLives(3),
     upgradesUsed(0),
     hasMovingUpgrade(false),
     hasShootingUpgrade(false),
-    hasSeeingUpgrade(false) 
+    hasSeeingUpgrade(false),
+    isQueuedForRespawn(false),
+    upgradeActive(false)
+
 { 
     name = rName; //set the robot name
     robotType = "GenericRobot"; //set the robot type
@@ -83,7 +115,7 @@ void GenericRobot::think( vector<vector<char>>&field, vector<GenericRobot*>& rob
 
     case 1: //fire
         log(cout, outfile, name + " is firing...!");
-        fire(dx,dy, field, robots,outfile); //fire in a random direction
+        fire(field, robots,outfile); //fire in a random direction
         lastaction = FIRE;
     break;
 
@@ -136,81 +168,75 @@ void GenericRobot::look(int dx,int dy,  vector<vector<char>>&field, ofstream& ou
     }};
 
 //FIRE MECHANICS+++++++++++++++++++++++++++++
-void GenericRobot::fire(int dx, int dy, vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) {
-    // Check if robot has shells left
+void GenericRobot::fire(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) {
     if (shells <= 0) {
         log(cout, outfile, name + ": Out of shells! Self-destructing now X___X");
-        isAlive = false;
+        loseLife();
+        markDead();
 
-        // Remove from battlefield
         field[PosX][PosY] = '.';
-        log(cout, outfile, name + " has been removed from the battlefield due to self-destruction.");
+        positionToRobot.erase({PosX, PosY});
 
+        if (remainingLives > 0 && !isQueuedForRespawn) {
+            respawnQueue.push(this);
+            isQueuedForRespawn = true;
+            log(cout, outfile, name + " is added to respawn queue.");
+        } else if (remainingLives == 0) {
+            log(cout, outfile, name + " has been removed from the battlefield due to self-destruction. Remaining lives: 0");
+            log(cout, outfile, name + " is permanently dead.");
+        }
         return;
     }
 
-    // Prevent firing at self or invalid direction
-    if ((dx == 0 && dy == 0) || abs(dx) > 1 || abs(dy) > 1) {
-        log(cout, outfile, name + " tried to fire at an invalid direction.");
-        return;
-    }
-
-    // Compute target location based on direction
-    int targetX = PosX + dx;
-    int targetY = PosY + dy;
-
-    // Boundary check: target must be within field
-    if (targetX < 0 || targetX >= field.size() || targetY < 0 || targetY >= field[0].size()) {
-        log(cout, outfile, name + ": Target out of bounds.");
-        return;
-    }
-
-    // Use up one shell
     shells--;
+    bool hit = false;
 
-    bool hit = false; // flag to track if any enemy is hit
+    for (int i = -1; i <= 1 && !hit; i++) {
+        for (int j = -1; j <= 1 && !hit; j++) {
+            if (i == 0 && j == 0) continue;
 
-    // Loop through all robots to check if any is at target location
-    for (GenericRobot* robot : robots) {
-        if (robot != this && robot->getAliveStatus()) {
-            auto [rx, ry] = robot->getPosition();
+            int targetX = PosX + i;
+            int targetY = PosY + j;
 
-            // Check if this robot is at the target position
-            if (rx == targetX && ry == targetY) {
-                int probability = rand() % 100;
+            if (targetX < 0 || targetX >= field.size() || targetY < 0 || targetY >= field[0].size()) continue;
 
-                if (probability < 70) {
-                    // Successful hit
-                    robot->takeDamage(outfile);
+            for (GenericRobot* robot : robots) {
+                if (robot == nullptr) continue; // Defensive: skip null pointers
+                if (robot == this) continue;    // Don't shoot self
+                if (!robot->getAliveStatus()) continue; // Only alive robots 
+                    
+                auto [rx, ry] = robot->getPosition();
+                    
+                if (rx == targetX && ry == targetY) {
+                    int chance = rand() % 100;
+                        
+                    if (chance < 70) {
+                        log(cout, outfile, name + " fired at (" + to_string(rx) + "," + to_string(ry) + ") — HIT " + robot->getRobotName() + "!");
 
-                        log(cout, outfile, name + " fired at (" + to_string(rx) + "," + to_string(ry) + ") — HIT " + robot->getrobotname() + 
-                        "! Remaining lives: " + to_string(robot->getRemainingLives()));
+                        // Remove from field and position map immediately
+                        field[rx][ry] = '.';
+                        positionToRobot.erase({rx, ry});
 
-                    if (!robot->getAliveStatus()) {
-                        log(cout, outfile, robot->getrobotname() + " has been destroyed and removed from the battlefield.");
-                        auto [deadX, deadY] = robot->getPosition();
-                        field[deadX][deadY] = '.'; // clear battlefield
+                        robot->takeDamage(field, outfile);
+                        awardUpgrade(robots, field, outfile);
+
+                        hit = true;
+                    } else {
+                        log(cout, outfile, name + " MISSED " + robot->getRobotName() + " at (" + to_string(rx) + "," + to_string(ry) + ")");
+                        hit = true;
                     }
-                } 
-                
-                else { // Missed
-                    log(cout, outfile, name + " MISSED " + robot->getrobotname() + " at (" + to_string(rx) + "," + to_string(ry) + ")");
+                     break;
                 }
-
-                hit = true;
-                break; // Stop checking — only one robot per spot
             }
         }
-    }
-
-    // If no robot found in the spot
-    if (!hit) {
-        log(cout, outfile, name + " fired at (" + to_string(targetX) + "," + to_string(targetY) + ") but no robot was there.");
+        if (!hit) {
+        log(cout, outfile, name + " fired but no robot was in range.");
+        }
     }
 }
-    
+  
 //MOVE MECHANICS++++++++++++++++++++++++++++++++++++++++++++
-void GenericRobot::move(int dx, int dy, vector<vector<char>>& field, ofstream& outfile) {
+void GenericRobot::move(int dx, int dy, vector<vector<char>>& field, ofstream& outfile){
     // If dx and dy are both 0, robot stays still
     if (dx == 0 && dy == 0) {
         log(cout, outfile, name + " decides to stay still.");
@@ -241,38 +267,81 @@ void GenericRobot::move(int dx, int dy, vector<vector<char>>& field, ofstream& o
     }
 }
 
+//Reset after Respawn---------------------------------------------------------
+void GenericRobot::reset() {
+    shells = 10;
+    isAlive = true;
+    isQueuedForRespawn = false;
+    upgradesUsed = 0;
+    hasMovingUpgrade = false;
+    hasShootingUpgrade = false;
+    hasSeeingUpgrade = false;
+    upgradeActive = false;
+}
 
-//JUMP BOT-------------------------
-jumpBot::jumpBot(string name,  vector<vector<char>>&field, ofstream& outfile): GenericRobot(name,0,0), jumps(3){
-  robotType="JumpBot";
-  hasMovingUpgrade=true;//set the robot type
-    
-  };
-
-  void jumpBot:: jump(int newX, int newY,  vector<vector<char>>& field, ofstream& outfile) {
-   if (jumps>0){
-    cout<<name<<" upgraded! to jumpBot!"<<endl;
-    if (newX>=0 && newX<field.size()&& newY>=0 && newY<field[0].size()){
-      PosX=newX;
-      PosY=newY;
-      jumps--;
-      log(cout, outfile, name + " jumped to position (" + to_string(PosX) + "," + to_string(PosY) + ")");
+//Upgrade------------------------------------------------------------------
+void GenericRobot::awardUpgrade(vector<GenericRobot*>& activeRobots, vector<vector<char>>& field, ofstream& outfile) {
+    if (upgradesUsed >= 3) {
+        log(cout, outfile, name + " has maxed out all upgrades.");
+        return;
     }
-    else{
-      cout<<name<<" Out of bounds! Cannot jump!"<<endl;
-    };
-   };
-  };
 
-     void jumpBot:: think( vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile)  {
-    if (jumps >0){
-      int newX = rand() % field.size();
-      int newY = rand() % field[0].size();
-      jump(newX,newY, field, outfile);
+    GenericRobot* upgraded = nullptr;
+    vector<string> available;
+
+    if (!hasMovingUpgrade) available.push_back("Moving");
+    if (!hasShootingUpgrade) available.push_back("Shooting");
+    if (!hasSeeingUpgrade) available.push_back("Seeing");
+
+    if (available.empty()) return;
+
+    string category = available[rand() % available.size()];
+    log(cout, outfile, name + " is choosing an upgrade from: " + category);
+
+    int x = PosX;
+    int y = PosY;
+
+    if (category == "Moving") {
+        string selected = "Jump";
+        log(cout, outfile, name + " received Moving upgrade: " + selected);
+        upgraded = new jumpBot(name, x, y);
+        upgraded->hasMovingUpgrade = true;
+
+    } else if (category == "Shooting") {
+        string selected = "ThirtyShot";
+        log(cout, outfile, name + " received Shooting upgrade: " + selected);
+        upgraded = new thirtyShotBot(name, x, y);
+        upgraded->hasShootingUpgrade = true;
+
+    } else if (category == "Seeing") {
+        vector<string> choices = {"Scout", "Track"};
+        string selected = choices[rand() % choices.size()];
+        log(cout, outfile, name + " received Seeing upgrade: " + selected);
+
+        if (selected == "Scout") upgraded = new scoutBot(name, x, y);
+        else if (selected == "Track") upgraded = new trackBot(name, x, y);
+        upgraded->hasSeeingUpgrade = true;
     }
-    else{
-      log(cout, outfile, name + " has no jumps left! Falling back to generic thinking.");
-      GenericRobot::think(field, robots, outfile); //fallback to generic thinking
-    };
 
-  };
+    if (upgraded) {
+        upgraded->setPosition(PosX, PosY);
+        upgraded->setShells(shells);
+        upgraded->upgradesUsed = upgradesUsed + 1;
+        upgraded->setIsQueuedForRespawn(isQueuedForRespawn);
+        upgraded->setAliveStatus(isAlive);
+
+        // Preserve other upgrades if any
+        if (!upgraded->hasMovingUpgrade) upgraded->hasMovingUpgrade = hasMovingUpgrade;
+        if (!upgraded->hasShootingUpgrade) upgraded->hasShootingUpgrade = hasShootingUpgrade;
+        if (!upgraded->hasSeeingUpgrade) upgraded->hasSeeingUpgrade = hasSeeingUpgrade;
+
+        field[PosX][PosY] = name[0];
+        positionToRobot[{PosX, PosY}] = upgraded;
+
+        revertNextTurn.push_back(upgraded);
+        replaceNextTurn.push_back({this, upgraded});
+
+        log(cout, outfile, name + " will be upgraded to " + upgraded->getRobotType() + " next turn.");
+    }
+}
+
