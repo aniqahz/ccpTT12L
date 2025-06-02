@@ -8,6 +8,9 @@
 #include <sstream>
 #include <thread>
 #include <chrono>
+#include <fstream>
+#include <iostream>
+#include <cstdlib>
 
 using namespace std;
 
@@ -133,10 +136,11 @@ void processRespawn(vector<vector<char>>& field, ofstream& outfile) {
 
 void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vector<RobotSpawn>& robSpawn, vector<GenericRobot*>& robots){
     auto replaceAllReferences = [&](GenericRobot* oldBot, GenericRobot* newBot) {
-        for (auto& robot : robots) if (robot == oldBot) robot = newBot;
-        for (auto& bot : activeRobots) if (bot == oldBot) bot = newBot;
-        for (auto& bot : revertNextTurn) if (bot == oldBot) bot = newBot;
-        for (auto& [pos, bot] : positionToRobot) if (bot == oldBot) bot = newBot;
+        for (auto& robot : robots) if (robot == oldBot) robot = nullptr;
+        for (auto& bot : activeRobots) if (bot == oldBot) bot = nullptr;
+        for (auto& bot : revertNextTurn) if (bot == oldBot) bot = nullptr;
+        for (auto& [pos, bot] : positionToRobot) if (bot == oldBot) bot = nullptr;
+        delete oldBot;
 
       /*   for (auto& data : robSpawn) {
             if (!data.spawned && steps + 1 == data.spawnTurn) {
@@ -219,7 +223,7 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
         // Upgrade replacements
         for (auto& [oldBot, newBot] : replaceNextTurn) {
             replaceAllReferences(oldBot, newBot);
-            delete oldBot;
+            //delete oldBot; // Clean up old bot memory
         }
         replaceNextTurn.clear();
 
@@ -247,11 +251,11 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
             replaceAllReferences(upgraded, reverted);
             field[x][y] = reverted->getRobotName()[0];  // Update field character
 
-            revertCleanup.push_back(upgraded);
+           // revertCleanup.push_back(upgraded);
             log(cout, outfile, name + " reverted back to GenericRobot.");
         }
         revertNextTurn.clear();
-        for (auto* r : revertCleanup) delete r;
+        //for (auto* r : revertCleanup) delete r;
 
         // Handle respawns
         processRespawn(field, outfile);

@@ -38,12 +38,28 @@ int main()
     simulation(outfile, field, steps, robSpawn, robots);
 
       // Clean up robot memory
-    for (auto r : robots)
+    for (auto r : robots){ 
         delete r;
+        //r= nullptr;
+    }
 
-    for(auto& data: robSpawn)
-        delete data.robot;
-
+    for (auto& data : robSpawn) {
+        data.robot=nullptr;
+    /*if (data.robot) {
+        // Check if this pointer is still valid (not already deleted)
+        bool alreadyDeleted = false;
+        for (auto r : robots) {
+            if (r == data.robot) {
+                alreadyDeleted = true;
+                break;
+            }
+        }
+        if (!alreadyDeleted) {
+            delete data.robot;
+        }
+        data.robot = nullptr;
+    }*/
+}
     infile.close();
     outfile.close();
 
