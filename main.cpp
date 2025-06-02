@@ -24,6 +24,7 @@ int main() {
 
     int row = 0, col = 0, steps = 0, numRobot = 0;
 
+    // Open input and output files
     ifstream infile("Robot.txt");
     ofstream outfile("output.txt");
     if (!infile || !outfile) {
@@ -31,24 +32,26 @@ int main() {
         return 1;
     }
 
+    // Read configuration from the input file
     if (!config(infile, row, col, steps)) {
         cout << "Invalid config" << endl;
         return 1;
     }
 
+    // Initialize the battlefield and robots
     vector<vector<char>> field(row, vector<char>(col, '.'));
     vector<GenericRobot*> robots;
     vector<RobotSpawn> robSpawn;
 
+    // Read number of robots and their positions
     string line;
     getline(infile, line); // robots
     sscanf(line.c_str(), "robots: %d", &numRobot);
     robotPos(infile, outfile, field, numRobot, robSpawn, steps, robots);
     displayField(field);
-
     simulation(outfile, field, steps, robSpawn, robots);
 
-      // Clean up robot memory
+    // Clean up dynamically allocated robot memory
     for (auto& r : robots) {
         if (r) {
             delete r;
@@ -56,6 +59,7 @@ int main() {
         }
     }
 
+    // Nullify robot pointers in robSpawn
     for (auto& data : robSpawn) {
         data.robot=nullptr;
 }

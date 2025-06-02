@@ -110,7 +110,6 @@ public:
     void resetToGeneric() override;
 
     // Upgrade system
-    
     void awardUpgrade(vector<GenericRobot*>& activeRobots, vector<vector<char>>& field, ofstream& outfile);
     virtual void revert() {} // For temporary upgrades
     int upgradeTurnsLeft = 0; // For temporary upgrades

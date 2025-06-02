@@ -176,7 +176,7 @@ ThirtyShotBot::ThirtyShotBot(string name, int x, int y)
     : GenericRobot(name, x, y) {
     robotType = "ThirtyShotBot";
     hasShootingUpgrade = true;
-    setShells(30);
+    setShells(30);         // Set initial shells to 30
     upgradeActive = true; // Activate the upgrade
 }
 

@@ -34,9 +34,9 @@ Phone: 011-6204 6219 | 011-6346 4323 | 019-7109905 | 019-966 0664
 using namespace std;
 
 struct RobotSpawn{
-    GenericRobot* robot;
-    int spawnTurn; //determine which step to spawn
-    bool spawned; //check if it had spawned
+    GenericRobot* robot;    // pointer to the robot object
+    int spawnTurn;          //determine which step to spawn
+    bool spawned;           //check if it had spawned
 };
 
 void displayField(const vector<vector<char>>& field);

@@ -25,31 +25,32 @@ using namespace std;
 // JUMPBOT(moving upgrade)-------------------------------------------------
 class JumpBot : public GenericRobot {
 private:
-    int jumps;
+    int jumps; // Number of jumps remaining
 public:
-    JumpBot(string name, int x, int y);
-    void jump(int newX, int newY, vector<vector<char>>& field, ofstream& outfile);    void think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) override;
-    void revert() override;
+    JumpBot(string name, int x, int y); // Intialise jumpbot with name and position
+    void jump(int newX, int newY, vector<vector<char>>& field, ofstream& outfile);    
+    void think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) override;
+    void revert() override; //remove upgrade and reset to generic robot
 };
 
 // HIDEBOT(moving upgrade)-------------------------------------------------
 class HideBot : public GenericRobot
 {
     private:
-        int hideChances;
-        bool botHidden = false;
+        int hideChances;         //Number of hides remaining
+        bool botHidden = false;  // If robot is hidden or not
 
     public:
-        HideBot(string name, int x, int y);
+        HideBot(string name, int x, int y); // Initialise HideBot with name and position
         void think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) override;
-        void revert() override;
+        void revert() override; 
 };
 
 // LONGSHOTBOT(shooting upgrade)----------------------------------------------
 class LongShotBot : public GenericRobot
 {
 private:
-    int maxDistance = 3;
+    int maxDistance = 3; // Maximum distance for long shots
 public:
     LongShotBot(string name, int x, int y);
     void think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) override;
@@ -77,7 +78,7 @@ public:
 //SCOUTBOT(seeing upgrade)-------------------------------------------------
 class ScoutBot : public GenericRobot {
 private:
-    int scanUses;
+    int scanUses; // Number of scans remaining
 public:
     ScoutBot(string name, int x, int y);
     void think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) override;
@@ -87,7 +88,7 @@ public:
 //TRACKBOT(seeing upgrade)-------------------------------------------------
 class TrackBot : public GenericRobot {
 private:
-    int trackers;
+    int trackers;         // Number of trackers remaining
     vector<pair<string, pair<int, int>>> trackedEnemies;
 public:
     TrackBot(string name, int x, int y);

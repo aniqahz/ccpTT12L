@@ -12,7 +12,7 @@ nur.aleez.dania@student.mmu.edu.my | wan.hanani.iman@student.mmu.edu.my
 Phone: 011-6204 6219 | 011-6346 4323 | 019-7109905 | 019-966 0664
 **********|**********|**********/
 
-//base class of robot
+// Base class of all robots
 #include "robot.h" 
 #include "battlefield.h"
 #include "upgrade.h"
@@ -50,6 +50,7 @@ void baseRobot::takeDamage(vector<vector<char>>& field, ofstream& outfile) {
         log(cout, outfile, getRobotName() + " was HIT and DESTROYED! Remaining lives: " + to_string(remainingLives));
         log(cout, outfile, getRobotName() + " has been destroyed and removed from the battlefield.");
 
+        // Queue for respawn if not already queued
         GenericRobot* derived = dynamic_cast<GenericRobot*>(this);
         if (derived && !derived->getIsQueuedForRespawn()) {
             respawnQueue.push(derived);
@@ -62,6 +63,7 @@ void baseRobot::takeDamage(vector<vector<char>>& field, ofstream& outfile) {
     }
 }
 
+// Decrement robot's remaining lives
 void baseRobot::loseLife() {
     if (remainingLives > 0) {
         remainingLives--;
@@ -71,6 +73,7 @@ void baseRobot::loseLife() {
     }
 }
 
+// Mark the robot as dead
 void baseRobot::markDead(){
     isAlive = false;
 }
@@ -106,7 +109,6 @@ GenericRobot::GenericRobot(string rName, int x, int y):
 { 
     name = rName; //set the robot name
     robotType = "GenericRobot"; //set the robot type
-    //isAlive = true; //alive status
 };
    
 //THINK MECHANICS++++++++++++++++++++++++++++++++++++++++++
@@ -305,6 +307,7 @@ void GenericRobot::resetToGeneric() {
 
 //Upgrade------------------------------------------------------------------
 void GenericRobot::awardUpgrade(vector<GenericRobot*>& activeRobots, vector<vector<char>>& field, ofstream& outfile) {
+    // Only award upgrade if the robot is alive and has not maxed out upgrades
     if (upgradesUsed >= 3 || upgradeActive) return;
     
     if (upgradesUsed >= 3) {
@@ -315,18 +318,22 @@ void GenericRobot::awardUpgrade(vector<GenericRobot*>& activeRobots, vector<vect
     GenericRobot* upgraded = nullptr;
     vector<string> available;
 
+    // Determine available upgrade categories
     if (!hasMovingUpgrade) available.push_back("Moving");
     if (!hasShootingUpgrade) available.push_back("Shooting");
     if (!hasSeeingUpgrade) available.push_back("Seeing");
 
+    // If no upgrades are available, return
     if (available.empty()) return;
 
+    // Randomly select a category from available upgrades
     string category = available[rand() % available.size()];
     log(cout, outfile, name + " is choosing an upgrade from: " + category);
 
     int x = PosX;
     int y = PosY;
 
+    // Select the upgrade based on the category
     if (category == "Moving") {
         vector<string> choices = {"Jump", "Hide"};
         string selected = choices[rand() % choices.size()];
@@ -356,6 +363,11 @@ void GenericRobot::awardUpgrade(vector<GenericRobot*>& activeRobots, vector<vect
         upgraded->hasSeeingUpgrade = true;
     }
 
+    // If an upgrade was successfully created, set its properties
+     if (!upgraded) {
+        log(cout, outfile, name + " failed to receive an upgrade.");
+        return;
+    }
     if (upgraded) {
         upgraded->setPosition(PosX, PosY);
         upgraded->setShells(shells);
@@ -363,13 +375,14 @@ void GenericRobot::awardUpgrade(vector<GenericRobot*>& activeRobots, vector<vect
         upgraded->setIsQueuedForRespawn(isQueuedForRespawn);
         upgraded->setAliveStatus(isAlive);
 
-        // Preserve other upgrades if any
+        // Preserve other upgrades if any were already chosen
         if (!upgraded->hasMovingUpgrade) upgraded->hasMovingUpgrade = hasMovingUpgrade;
         if (!upgraded->hasShootingUpgrade) upgraded->hasShootingUpgrade = hasShootingUpgrade;
         if (!upgraded->hasSeeingUpgrade) upgraded->hasSeeingUpgrade = hasSeeingUpgrade;
 
-        upgraded->upgradeActive = true;
+        upgraded->upgradeActive = true; // Mark the upgrade as active
 
+        // Schedule this robot to be replaaced by the upgraded version next turn
         replaceNextTurn.push_back({this, upgraded});
 
         log(cout, outfile, name + " will be upgraded to " + upgraded->getRobotType() + " next turn.");
