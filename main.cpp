@@ -26,7 +26,7 @@ int main() {
 
     // Open input and output files
     ifstream infile("Robot.txt");
-    ofstream outfile("output.txt");
+    ofstream outfile("Output.txt");
     if (!infile || !outfile) {
         cout << "Error opening file" << endl;
         return 1;

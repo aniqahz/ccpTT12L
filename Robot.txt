@@ -4,12 +4,12 @@ robots: 13
 GenericRobot Kidd 3 4
 GenericRobot Jet  2 1
 GenericRobot Alpha 4 3
-GenericRobot Beta 2  3 
+GenericRobot Beta 2 3 
 GenericRobot Star random random
 GenericRobot Yap 1 4
-GenericRobot Dania radnom random
+GenericRobot Dania random random
 GenericRobot Nani 1 2
-GenericRobot Peppy random radnom
+GenericRobot Peppy random random
 GenericRobot Qis random random
 GenericRobot My 4 2
 GenericRobot Lino 3 1
