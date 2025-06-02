@@ -1,14 +1,16 @@
 M by N : 5 5
-steps: 300
-robots: 11
+steps: 400
+robots: 13
 GenericRobot Kidd 3 4
 GenericRobot Jet 2 1
 GenericRobot Alpha 4 3
 GenericRobot Beta random random
 GenericRobot Star random random
-GenericRobot Jas 1 4
-GenericRobot Ani 3 3
+GenericRobot Yap 1 4
+GenericRobot Dania radnom random
 GenericRobot Nani 1 2
+GenericRobot Peppy random radnom
+GenericRobot Qis random random
 GenericRobot My 4 2
 GenericRobot Lino 3 1
 GenericRobot Chan random random

@@ -49,9 +49,11 @@ int main() {
     simulation(outfile, field, steps, robSpawn, robots);
 
       // Clean up robot memory
-    for (auto r : robots){ 
-        delete r;
-        //r= nullptr;
+    for (auto& r : robots) {
+        if (r) {
+            delete r;
+            r = nullptr; // Set pointer to nullptr after deletion
+        }
     }
 
     for (auto& data : robSpawn) {

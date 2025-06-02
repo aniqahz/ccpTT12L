@@ -123,6 +123,12 @@ void processRespawn(vector<vector<char>>& field, ofstream& outfile) {
     GenericRobot* robotToRespawn = respawnQueue.front();
     respawnQueue.pop();
 
+    // Prevent respawning dead robots
+    if (!robotToRespawn || robotToRespawn->getRemainingLives() <= 0) {
+        log(cout, outfile, (robotToRespawn ? robotToRespawn->getRobotName() : "Unknown") + " cannot respawn (no lives left).");
+        return;
+    }
+
     int rows = field.size(), cols = field[0].size(), x, y, attempts = 0;
     const int maxAttempts = 100;
 
@@ -149,31 +155,17 @@ void processRespawn(vector<vector<char>>& field, ofstream& outfile) {
 }
 
 void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vector<RobotSpawn>& robSpawn, vector<GenericRobot*>& robots) {
+    
     auto replaceAllReferences = [&](GenericRobot* oldBot, GenericRobot* newBot) {
-        for (auto& robot : robots) if (robot == oldBot) robot = nullptr;
-        for (auto& bot : activeRobots) if (bot == oldBot) bot = nullptr;
+        for (auto& robot : robots) if (robot == oldBot) robot = newBot;
+        for (auto& bot : activeRobots) if (bot == oldBot) bot = newBot;
         for (auto& bot : revertNextTurn) if (bot == oldBot) bot = nullptr;
-        for (auto& [pos, bot] : positionToRobot) if (bot == oldBot) bot = nullptr;
-        delete oldBot;
-
-      /*   for (auto& data : robSpawn) {
-            if (!data.spawned && steps + 1 == data.spawnTurn) {
-                auto [x, y] = data.robot->getPosition();
-                if (field[x][y] == '.') {
-                    field[x][y] = data.robot->getRobotName()[0];
-                    data.spawned = true;
-
-                    robots.push_back(data.robot);
-                    activeRobots.push_back(data.robot);
-                    positionToRobot[{x, y}] = data.robot;
-                    robotRespawnCount[data.robot] = 0;
-
-                    log(cout, outfile, data.robot->getRobotName() + " spawned at (" + to_string(x) + "," + to_string(y) + ")");
-                } else {
-                    log(cout, outfile, data.robot->getRobotName() + " failed to spawn (spot occupied)");
-                }
+        //delete oldBot; // Clean up old bot memory
+        for (auto it = positionToRobot.begin(); it != positionToRobot.end(); ++it) {
+            if (it->second == oldBot) {
+                it->second = newBot;
             }
-        } */
+        }        
 
         if (robotRespawnCount.count(oldBot)) {
             robotRespawnCount[newBot] = robotRespawnCount[oldBot];
@@ -216,8 +208,10 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
                                 field[i][j] = data.robot->getRobotName()[0];
                                 data.spawned = true;
 
-                                robots.push_back(data.robot);
-                                activeRobots.push_back(data.robot);
+                                if (find(robots.begin(), robots.end(), data.robot) == robots.end())
+                                    robots.push_back(data.robot);
+                                if (find(activeRobots.begin(), activeRobots.end(), data.robot) == activeRobots.end())
+                                    activeRobots.push_back(data.robot);
                                 positionToRobot[{i, j}] = data.robot;
                                 robotRespawnCount[data.robot] = 0;
 
@@ -238,17 +232,38 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
         // Apply upgrades
         for (auto& [oldBot, newBot] : replaceNextTurn) {
             replaceAllReferences(oldBot, newBot);
-            //delete oldBot; // Clean up old bot memory
+            delete oldBot; // Clean up old bot memory
+
+            for (auto it = positionToRobot.begin(); it != positionToRobot.end(); ) {
+            if (it->second == oldBot) it = positionToRobot.erase(it);
+            else ++it;
+        }
+            robotRespawnCount.erase(oldBot);
+
+            // Set all dangling pointers to nullptr
+            for (auto& robot : robots) if (robot == oldBot) robot = nullptr;
+            for (auto& robot : activeRobots) if (robot == oldBot) robot = nullptr;
         }
         replaceNextTurn.clear();
 
+        robots.erase(remove(robots.begin(), robots.end(), nullptr), robots.end());
+        activeRobots.erase(remove(activeRobots.begin(), activeRobots.end(), nullptr), activeRobots.end());
+
         // Robot actions
         for (auto& robot : robots) {
-            if (robot && robot->getAliveStatus()) {
-                robot->think(field, robots, outfile);
+            if (!robot) continue; // Skip null or deleted robots            if (robot->getRemainingLives() <= 0) continue; // Skip dead robots
+            if (!robot->getAliveStatus()) continue; // Skip dead robots
+            robot->think(field, robots, outfile);
+        
+            // --- Add this block for temporary upgrades ---
+            if (robot->upgradeTurnsLeft > 0) {
+                robot->upgradeTurnsLeft--;
+                if (robot->upgradeTurnsLeft == 0) {
+                    revertNextTurn.push_back(robot);
+                }
             }
         }
-
+        
         // Revert temporary upgrades
         vector<GenericRobot*> revertCleanup;
         for (auto* upgraded : revertNextTurn) {
@@ -264,12 +279,34 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
 
             replaceAllReferences(upgraded, reverted);
             field[x][y] = reverted->getRobotName()[0];
+            
+            delete upgraded; // Clean up old upgraded robot memory
 
-           // revertCleanup.push_back(upgraded);
+            // Remove from positionToRobot and robotRespawnCount
+            for (auto it = positionToRobot.begin(); it != positionToRobot.end(); ) {
+                if (it->second == upgraded) it = positionToRobot.erase(it);
+                else ++it;
+            }
+            robotRespawnCount.erase(upgraded);
+            
+            // Set all dangling pointers to nullptr
+            for (auto& robot : robots) if (robot == upgraded) robot = nullptr;
+            for (auto& robot : activeRobots) if (robot == upgraded) robot = nullptr;
+
             log(cout, outfile, name + " reverted back to GenericRobot.");
         }
+
         revertNextTurn.clear();
-        //for (auto* r : revertCleanup) delete r;
+        
+        queue<GenericRobot*> tempQueue;
+        while (!respawnQueue.empty()) {
+            GenericRobot* r = respawnQueue.front(); respawnQueue.pop();
+            if (r) tempQueue.push(r);
+        }
+        respawnQueue = tempQueue;
+
+        robots.erase(remove(robots.begin(), robots.end(), nullptr), robots.end());
+        activeRobots.erase(remove(activeRobots.begin(), activeRobots.end(), nullptr), activeRobots.end());
 
         // Respawns
         processRespawn(field, outfile);

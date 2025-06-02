@@ -28,8 +28,7 @@ private:
     int jumps;
 public:
     JumpBot(string name, int x, int y);
-    void jump(int newX, int newY, const vector<vector<char>>& field, ofstream& outfile);
-    void think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) override;
+    void jump(int newX, int newY, vector<vector<char>>& field, ofstream& outfile);    void think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) override;
     void revert() override;
 };
 

@@ -106,7 +106,7 @@ GenericRobot::GenericRobot(string rName, int x, int y):
 { 
     name = rName; //set the robot name
     robotType = "GenericRobot"; //set the robot type
-    isAlive = true; //alive status
+    //isAlive = true; //alive status
 };
    
 //THINK MECHANICS++++++++++++++++++++++++++++++++++++++++++
@@ -370,10 +370,12 @@ void GenericRobot::awardUpgrade(vector<GenericRobot*>& activeRobots, vector<vect
 
         upgraded->upgradeActive = true;
 
+        // upgrade duration
+        upgraded->upgradeTurnsLeft = 3; // Change 1 to however many turns you want
+
         field[PosX][PosY] = name[0];
         positionToRobot[{PosX, PosY}] = upgraded;
 
-        revertNextTurn.push_back(upgraded);
         replaceNextTurn.push_back({this, upgraded});
 
         log(cout, outfile, name + " will be upgraded to " + upgraded->getRobotType() + " next turn.");
