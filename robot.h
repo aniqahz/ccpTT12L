@@ -40,7 +40,7 @@ public:
     virtual void takeDamage(vector<vector<char>>& field, ofstream& outfile);
     void loseLife();
     void markDead();
-    virtual void reset() = 0;
+    virtual void resetToGeneric() = 0;
 };
 
 // --- MOVING ROBOT ----------------------------------------------------------
@@ -93,7 +93,7 @@ public:
     void look(int dx, int dy, vector<vector<char>>& field, ofstream& outfile) override;
     void fire(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) override;
     void move(int dx, int dy, vector<vector<char>>& field, ofstream& outfile) override;
-    void reset() override;
+    void resetToGeneric() override;
 
     // Upgrade system
     void awardUpgrade(vector<GenericRobot*>& activeRobots, vector<vector<char>>& field, ofstream& outfile);

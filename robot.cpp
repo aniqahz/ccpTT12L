@@ -92,7 +92,7 @@ GenericRobot::GenericRobot(string rName, int x, int y):
 { 
     name = rName; //set the robot name
     robotType = "GenericRobot"; //set the robot type
-    //isAlive = true; //alive status
+    isAlive = true; //alive status
 };
    
 //THINK MECHANICS++++++++++++++++++++++++++++++++++++++++++
@@ -214,7 +214,9 @@ void GenericRobot::fire(vector<vector<char>>& field, vector<GenericRobot*>& robo
 
     bool hit = false;
     for (GenericRobot* robot : robots) {
-        if (robot == nullptr || robot == this || !robot->getAliveStatus()) continue;
+        if (!robot) continue;  // Defensive: skip null or deleted robots
+        if (robot == this) continue;     // Don't shoot yourself
+        if (!robot->getAliveStatus()) continue;  // Only alive robots
 
         auto [rx, ry] = robot->getPosition();
         if (rx == targetX && ry == targetY) {
@@ -242,7 +244,7 @@ void GenericRobot::fire(vector<vector<char>>& field, vector<GenericRobot*>& robo
     }
 }
 
-  
+
 //MOVE MECHANICS++++++++++++++++++++++++++++++++++++++++++++
 void GenericRobot::move(int dx, int dy, vector<vector<char>>& field, ofstream& outfile){
     // If dx and dy are both 0, robot stays still
@@ -276,7 +278,7 @@ void GenericRobot::move(int dx, int dy, vector<vector<char>>& field, ofstream& o
 }
 
 //Reset after Respawn---------------------------------------------------------
-void GenericRobot::reset() {
+void GenericRobot::resetToGeneric() {
     shells = 10;
     isAlive = true;
     isQueuedForRespawn = false;

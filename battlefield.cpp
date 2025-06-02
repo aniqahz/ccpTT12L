@@ -120,7 +120,7 @@ void processRespawn(vector<vector<char>>& field, ofstream& outfile) {
         return;
     }
 
-    robotToRespawn->reset();
+    robotToRespawn->resetToGeneric();
     robotToRespawn->setPosition(x, y);
     robotToRespawn->setAliveStatus(true);
     robotToRespawn->setIsQueuedForRespawn(false);
@@ -131,31 +131,20 @@ void processRespawn(vector<vector<char>>& field, ofstream& outfile) {
     log(cout, outfile, robotToRespawn->getRobotName() + " respawned at (" + to_string(x) + "," + to_string(y) + ")");
 }
 
-void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vector<RobotSpawn>& robSpawn, vector<GenericRobot*>& robots){
+void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vector<RobotSpawn>& robSpawn, vector<GenericRobot*>& robots) {
     auto replaceAllReferences = [&](GenericRobot* oldBot, GenericRobot* newBot) {
-        for (auto& robot : robots) if (robot == oldBot) robot = newBot;
-        for (auto& bot : activeRobots) if (bot == oldBot) bot = newBot;
-        for (auto& bot : revertNextTurn) if (bot == oldBot) bot = newBot;
-        for (auto& [pos, bot] : positionToRobot) if (bot == oldBot) bot = newBot;
-
-      /*   for (auto& data : robSpawn) {
-            if (!data.spawned && steps + 1 == data.spawnTurn) {
-                auto [x, y] = data.robot->getPosition();
-                if (field[x][y] == '.') {
-                    field[x][y] = data.robot->getRobotName()[0];
-                    data.spawned = true;
-
-                    robots.push_back(data.robot);
-                    activeRobots.push_back(data.robot);
-                    positionToRobot[{x, y}] = data.robot;
-                    robotRespawnCount[data.robot] = 0;
-
-                    log(cout, outfile, data.robot->getRobotName() + " spawned at (" + to_string(x) + "," + to_string(y) + ")");
-                } else {
-                    log(cout, outfile, data.robot->getRobotName() + " failed to spawn (spot occupied)");
-                }
-            }
-        } */
+        for (auto& robot : robots)
+            if (robot == oldBot)
+                robot = newBot;
+        for (auto& bot : activeRobots)
+            if (bot == oldBot)
+                bot = newBot;
+        for (auto& bot : revertNextTurn)
+            if (bot == oldBot)
+                bot = newBot;
+        for (auto& [pos, bot] : positionToRobot)
+            if (bot == oldBot)
+                bot = newBot;
 
         if (robotRespawnCount.count(oldBot)) {
             robotRespawnCount[newBot] = robotRespawnCount[oldBot];
@@ -172,10 +161,11 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
 
     for (int round = 0; round < steps; ++round) {
         log(cout, outfile, "\nTurn " + to_string(round + 1) + "/" + to_string(steps));
-        
+
+        // Handle scheduled spawns
         for (auto& data : robSpawn) {
             if (!data.spawned && data.spawnTurn == round) {
-                auto[x,y] = data.robot->getPosition();
+                auto [x, y] = data.robot->getPosition();
                 if (field[x][y] == '.') {
                     field[x][y] = data.robot->getRobotName()[0];
                     data.spawned = true;
@@ -186,25 +176,24 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
                     robotRespawnCount[data.robot] = 0;
 
                     log(cout, outfile, data.robot->getRobotName() + " spawned at (" + to_string(x) + "," + to_string(y) + ")");
-                } else {
+                }
+                else {
+                    // Try alternative positions
                     bool spawnedElsewhere = false;
                     for (int i = 0; i < field.size(); i++) {
                         for (int j = 0; j < field[0].size(); j++) {
                             if (field[i][j] == '.') {
-                                // move robot to new position
                                 data.robot->setPosition(i, j);
                                 field[i][j] = data.robot->getRobotName()[0];
-                                spawnedElsewhere = true;
-            
-                                log(cout, outfile, data.robot->getRobotName() + " spawned at (" + to_string(i) + "," + to_string(j) + ") instead (original spot occupied)");
-            
-                                // update data
                                 data.spawned = true;
+
                                 robots.push_back(data.robot);
                                 activeRobots.push_back(data.robot);
                                 positionToRobot[{i, j}] = data.robot;
                                 robotRespawnCount[data.robot] = 0;
-            
+
+                                log(cout, outfile, data.robot->getRobotName() + " spawned at (" + to_string(i) + "," + to_string(j) + ") instead (original spot occupied)");
+                                spawnedElsewhere = true;
                                 break;
                             }
                         }
@@ -216,10 +205,21 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
                 }
             }
         }
-        // Upgrade replacements
+
+        // Apply upgrades
         for (auto& [oldBot, newBot] : replaceNextTurn) {
             replaceAllReferences(oldBot, newBot);
             delete oldBot;
+
+            for (auto& robot : robots)
+                if (robot == oldBot)
+                    robot = nullptr;
+            for (auto& r : activeRobots)
+                if (r == oldBot)
+                    r = nullptr;
+            for (auto& r : revertNextTurn)
+                if (r == oldBot)
+                    r = nullptr;
         }
         replaceNextTurn.clear();
 
@@ -230,11 +230,10 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
             }
         }
 
-        // Revert upgrades
+        // Revert temporary upgrades
         vector<GenericRobot*> revertCleanup;
         for (auto* upgraded : revertNextTurn) {
             if (!upgraded) continue;
-
             string name = upgraded->getRobotName();
             auto [x, y] = upgraded->getPosition();
 
@@ -242,10 +241,10 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
             reverted->setAliveStatus(upgraded->getAliveStatus());
             reverted->setShells(upgraded->getShells());
             reverted->setPosition(x, y);
-            reverted->reset();
+            reverted->resetToGeneric();
 
             replaceAllReferences(upgraded, reverted);
-            field[x][y] = reverted->getRobotName()[0];  // Update field character
+            field[x][y] = reverted->getRobotName()[0];
 
             revertCleanup.push_back(upgraded);
             log(cout, outfile, name + " reverted back to GenericRobot.");
@@ -253,16 +252,15 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
         revertNextTurn.clear();
         for (auto* r : revertCleanup) delete r;
 
-        // Handle respawns
+        // Respawns
         processRespawn(field, outfile);
 
-        // Display field
+        // Display battlefield
         for (const auto& row : field) {
-            string line(row.begin(), row.end());
-            log(cout, outfile, line);
+            log(cout, outfile, string(row.begin(), row.end()));
         }
 
-        // Early end if only one robot is left
+        // Early end if only one robot left
         int aliveCount = 0;
         GenericRobot* lastAlive = nullptr;
         for (auto& r : robots) {
@@ -271,8 +269,8 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
                 lastAlive = r;
             }
         }
-
         if (aliveCount <= 1) break;
+
         this_thread::sleep_for(chrono::milliseconds(500));
     }
 
@@ -287,9 +285,13 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
     }
 
     log(cout, outfile, "\n=== Simulation Ended ===");
-    if (aliveCount == 1)
+    if (aliveCount == 1) {
         log(cout, outfile, "Winner: " + winner->getRobotName() + " the " + winner->getRobotType());
-    else
+    }
+    else {
         log(cout, outfile, "No clear winner — it's a draw!");
+    }
 }
+
+
 
