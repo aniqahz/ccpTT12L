@@ -1,17 +1,3 @@
-/**********|**********|**********|
-Program: main.cpp
-Course: Object Oriented Programming and Data Structures
-Trimester: 2510
-Name: ANIQAH NABILAH BINTI AZHAR | JASMYNE YAP | 
-NUR ALEEZ DANIA BINTI MOHD SHAHRUL AZMAN | WAN HANANI IMAN BINTI WAN MOHD AZIDI @ SAPAWI
-ID: 242UC244LQ | 242UC244PT | 242UC244QB | 242UC244CK
-Lecture Section: TC3L
-Tutorial Section: T11L
-Email: aniqah.nabilah.azhar@student.mmu.edu.my | jasmyne.yap@student.mmu.edu.my |
-nur.aleez.dania@student.mmu.edu.my | wan.hanani.iman@student.mmu.edu.my
-Phone: 011-6204 6219 | 011-6346 4323 | 019-7109905 | 019-966 0664
-**********|**********|**********/
-
 //base class of robot
 #include "robot.h" 
 #include "battlefield.h"
@@ -106,7 +92,7 @@ GenericRobot::GenericRobot(string rName, int x, int y):
 { 
     name = rName; //set the robot name
     robotType = "GenericRobot"; //set the robot type
-    isAlive = true; //alive status
+    //isAlive = true; //alive status
 };
    
 //THINK MECHANICS++++++++++++++++++++++++++++++++++++++++++
@@ -180,7 +166,7 @@ void GenericRobot::look(int dx,int dy,  vector<vector<char>>&field, ofstream& ou
     else{
       newX=PosX;
       newY=PosY; //if out of bounds, stay put
-      cout<<name<<" : Drifting away out of bounds...Staying put"<<endl;
+      log(cout, outfile, name + " : Drifting away out of bounds...Staying put");
     }};
 
 //FIRE MECHANICS+++++++++++++++++++++++++++++
@@ -228,9 +214,7 @@ void GenericRobot::fire(vector<vector<char>>& field, vector<GenericRobot*>& robo
 
     bool hit = false;
     for (GenericRobot* robot : robots) {
-        if (!robot) continue;  // Defensive: skip null or deleted robots
-        if (robot == this) continue;     // Don't shoot yourself
-        if (!robot->getAliveStatus()) continue;  // Only alive robots
+        if (robot == nullptr || robot == this || !robot->getAliveStatus()) continue;
 
         auto [rx, ry] = robot->getPosition();
         if (rx == targetX && ry == targetY) {
@@ -258,7 +242,7 @@ void GenericRobot::fire(vector<vector<char>>& field, vector<GenericRobot*>& robo
     }
 }
 
-
+  
 //MOVE MECHANICS++++++++++++++++++++++++++++++++++++++++++++
 void GenericRobot::move(int dx, int dy, vector<vector<char>>& field, ofstream& outfile){
     // If dx and dy are both 0, robot stays still
@@ -292,7 +276,7 @@ void GenericRobot::move(int dx, int dy, vector<vector<char>>& field, ofstream& o
 }
 
 //Reset after Respawn---------------------------------------------------------
-void GenericRobot::resetToGeneric() {
+void GenericRobot::reset() {
     shells = 10;
     isAlive = true;
     isQueuedForRespawn = false;
@@ -331,7 +315,7 @@ void GenericRobot::awardUpgrade(vector<GenericRobot*>& activeRobots, vector<vect
         vector<string> choices = {"Jump", "Hide"};
         string selected = choices[rand() % choices.size()];
         log(cout, outfile, name + " received Moving upgrade: " + selected);
-
+        
         if (selected == "Jump") upgraded = new JumpBot(name, x, y);
         else if (selected == "Hide") upgraded = new HideBot(name, x, y);
         upgraded->hasMovingUpgrade = true;

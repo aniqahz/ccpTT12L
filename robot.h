@@ -1,17 +1,3 @@
-/**********|**********|**********|
-Program: main.cpp
-Course: Object Oriented Programming and Data Structures
-Trimester: 2510
-Name: ANIQAH NABILAH BINTI AZHAR | JASMYNE YAP | 
-NUR ALEEZ DANIA BINTI MOHD SHAHRUL AZMAN | WAN HANANI IMAN BINTI WAN MOHD AZIDI @ SAPAWI
-ID: 242UC244LQ | 242UC244PT | 242UC244QB | 242UC244CK
-Lecture Section: TC3L
-Tutorial Section: T11L
-Email: aniqah.nabilah.azhar@student.mmu.edu.my | jasmyne.yap@student.mmu.edu.my |
-nur.aleez.dania@student.mmu.edu.my | wan.hanani.iman@student.mmu.edu.my
-Phone: 011-6204 6219 | 011-6346 4323 | 019-7109905 | 019-966 0664
-**********|**********|**********/
-
 #ifndef ROBOT_H
 #define ROBOT_H
 
@@ -54,7 +40,7 @@ public:
     virtual void takeDamage(vector<vector<char>>& field, ofstream& outfile);
     void loseLife();
     void markDead();
-    virtual void resetToGeneric() = 0;
+    virtual void reset() = 0;
 };
 
 // --- MOVING ROBOT ----------------------------------------------------------
@@ -107,7 +93,7 @@ public:
     void look(int dx, int dy, vector<vector<char>>& field, ofstream& outfile) override;
     void fire(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) override;
     void move(int dx, int dy, vector<vector<char>>& field, ofstream& outfile) override;
-    void resetToGeneric() override;
+    void reset() override;
 
     // Upgrade system
     void awardUpgrade(vector<GenericRobot*>& activeRobots, vector<vector<char>>& field, ofstream& outfile);
