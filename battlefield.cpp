@@ -207,7 +207,6 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
             if(k==oldBot) k = newBot;
             if(v==oldBot) v=newBot;
         }
-        log(cout, outfile, oldBot->getRobotName() + " upgraded to " + newBot->getRobotType());
 
         delete oldBot;
 
