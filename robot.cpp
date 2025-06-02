@@ -328,7 +328,7 @@ void GenericRobot::awardUpgrade(vector<GenericRobot*>& activeRobots, vector<vect
         if (selected == "LongShot") upgraded = new LongShotBot(name, x, y);
         else if (selected == "SemiAuto") upgraded = new SemiAutoBot(name, x, y);
         else if (selected == "ThirtyShot") upgraded = new ThirtyShotBot(name, x, y);
-        upgraded->hasSeeingUpgrade = true;
+        upgraded->hasShootingUpgrade = true;
 
     } else if (category == "Seeing") {
         vector<string> choices = {"Scout", "Track"};
