@@ -44,10 +44,12 @@ void log(ostream& terminal, ofstream& file, const string& output);
 bool config(ifstream& infile, int& row, int& col, int& steps);
 void robotPos(ifstream& infile, ofstream& outfile, vector<vector<char>>& field, int numRobot, vector<RobotSpawn>& robSpawn, int maxSteps, vector<GenericRobot*>& robots);
 void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vector<RobotSpawn>& robSpawn, vector<GenericRobot*> &robots);
+void refreshField(vector<vector<char>>& field, const vector<GenericRobot*>& robots);
 
 extern map<pair<int, int>, GenericRobot*> positionToRobot;
 extern vector<GenericRobot*> activeRobots;
 extern queue<GenericRobot*> respawnQueue;
+extern queue<GenericRobot*> respawnNextTurn;
 extern vector<GenericRobot*> revertNextTurn;
 void processRespawn(vector<vector<char>>& field, ofstream& outfile);
 extern map<GenericRobot*, int> robotRespawnCount;
