@@ -15,45 +15,62 @@ Phone: 011-6204 6219 | 011-6346 4323 | 019-7109905 | 019-966 0664
 #include "battlefield.h"
 #include "robot.h"
 #include "upgrade.h"
-
-#include<iostream>
+#include <iostream>
 #include <vector>
 using namespace std;
 
-int main()
-{
+int main() {
     srand(static_cast<unsigned int>(time(nullptr)));
 
     int row = 0, col = 0, steps = 0, numRobot = 0;
 
     ifstream infile("Robot.txt");
-    ofstream outfile("output1.txt");
-    if (!infile || !outfile)
-    {
+    ofstream outfile("output.txt");
+    if (!infile || !outfile) {
         cout << "Error opening file" << endl;
         return 1;
     }
 
-    if(!config(infile, row,col,steps))
-    {
-        cout<<"invalid config"<<endl;
+    if (!config(infile, row, col, steps)) {
+        cout << "Invalid config" << endl;
         return 1;
     }
 
     vector<vector<char>> field(row, vector<char>(col, '.'));
-    vector<GenericRobot*> robots; //storing robots in a vector
+    vector<GenericRobot*> robots;
+    vector<RobotSpawn> robSpawn;
 
     string line;
     getline(infile, line); // robots
     sscanf(line.c_str(), "robots: %d", &numRobot);
-    robotPos(infile, outfile, field, numRobot,robots);
+    robotPos(infile, outfile, field, numRobot, robSpawn, steps, robots);
     displayField(field);
-
-    simulation(outfile, field, steps, robots);
+    void awardUpgrade(vector<GenericRobot*>& activeRobots, vector<vector<char>>& field, ofstream& outfile);
+    simulation(outfile, field, steps, robSpawn, robots);
 
       // Clean up robot memory
-    for (auto r : robots)
+    for (auto r : robots){ 
         delete r;
+        //r= nullptr;
+    }
+
+    for (auto& data : robSpawn) {
+        data.robot=nullptr;
+    /*if (data.robot) {
+        // Check if this pointer is still valid (not already deleted)
+        bool alreadyDeleted = false;
+        for (auto r : robots) {
+            if (r == data.robot) {
+                alreadyDeleted = true;
+                break;
+            }
+        }
+        if (!alreadyDeleted) {
+            delete data.robot;
+        }
+        data.robot = nullptr;
+    }*/
+}
     infile.close();
     outfile.close();
 
