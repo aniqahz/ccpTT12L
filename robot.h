@@ -110,13 +110,15 @@ public:
     void resetToGeneric() override;
 
     // Upgrade system
+    
     void awardUpgrade(vector<GenericRobot*>& activeRobots, vector<vector<char>>& field, ofstream& outfile);
     virtual void revert() {} // For temporary upgrades
 
     // Accessors
     bool getIsQueuedForRespawn() const { return isQueuedForRespawn; }
     void setIsQueuedForRespawn(bool status) { isQueuedForRespawn = status; }
-
+    bool getUpgradeActive() const {return upgradeActive;}
+    void setUpgradeActive(bool active) { upgradeActive = active; }
     int getShells() const { return shells; }
     void setShells(int s) { shells = s; }
 };

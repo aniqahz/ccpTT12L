@@ -198,7 +198,7 @@ void GenericRobot::fire(vector<vector<char>>& field, vector<GenericRobot*>& robo
         log(cout, outfile, name + " remaining lives: " + to_string(remainingLives));
 
         if (remainingLives > 0 && !getIsQueuedForRespawn()) {
-            respawnQueue.push(this);
+            respawnNextTurn.push(this);
             setIsQueuedForRespawn(true);
             log(cout, outfile, name + " is added to respawn queue.");
         } else if (remainingLives == 0) {
@@ -370,10 +370,6 @@ void GenericRobot::awardUpgrade(vector<GenericRobot*>& activeRobots, vector<vect
 
         upgraded->upgradeActive = true;
 
-        field[PosX][PosY] = name[0];
-        positionToRobot[{PosX, PosY}] = upgraded;
-
-        revertNextTurn.push_back(upgraded);
         replaceNextTurn.push_back({this, upgraded});
 
         log(cout, outfile, name + " will be upgraded to " + upgraded->getRobotType() + " next turn.");
