@@ -49,7 +49,7 @@ void JumpBot::think(vector<vector<char>>& field, vector<GenericRobot*>& robots, 
 }
 
 void JumpBot::revert() {
-    this->resetToGeneric();
+    this->reset();
     upgradeActive = false;
     jumps = 3;  // Reset jumps for next use
 
@@ -107,7 +107,7 @@ void HideBot::revert(){
     botHidden = false;
     hideChances = 3;
 }void HideBot::revert(){
-    this->resetToGeneric();
+    this->reset();
     upgradeActive = false;
     botHidden = false;
     hideChances = 2;
@@ -249,7 +249,7 @@ void SemiAutoBot::fire(vector<vector<char>>& field, vector<GenericRobot*>& robot
 }
 
 void SemiAutoBot::revert() {
-    this->resetToGeneric();
+    this->reset();
     upgradeActive = false;
     shells = 10;
 
@@ -270,7 +270,7 @@ void ThirtyShotBot::think(vector<vector<char>>& field, vector<GenericRobot*>& ro
 }
 
 void ThirtyShotBot::revert() {
-    this->resetToGeneric();
+    this->reset();
     upgradeActive = false;
     setShells(30); // Reset shells to 30
 
@@ -299,7 +299,7 @@ void ScoutBot::think(vector<vector<char>>& field, vector<GenericRobot*>& robots,
 }
 
 void ScoutBot::revert() {
-    this->resetToGeneric();
+    this->reset();
     upgradeActive = false;
     scanUses =3;
 }
@@ -336,7 +336,7 @@ void TrackBot::think(vector<vector<char>>& field, vector<GenericRobot*>& robots,
 }
 
 void TrackBot::revert() {
-    this->resetToGeneric();
+    this->reset();
     upgradeActive = false;
     trackers= 3;
     trackedEnemies.clear();

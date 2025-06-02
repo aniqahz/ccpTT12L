@@ -43,6 +43,7 @@ class HideBot : public GenericRobot
     public:
         HideBot(string name, int x, int y);
         void think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) override;
+        void HideBot::hide(ofstream& outfile);
         void revert() override;
 };
 
@@ -54,6 +55,7 @@ private:
 public:
     LongShotBot(string name, int x, int y);
     void think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) override;
+    void fire(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile);
     void revert() override;
 
 };
@@ -64,7 +66,9 @@ class SemiAutoBot : public GenericRobot
 public:
     SemiAutoBot(string name, int x, int y);
     void think(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile) override;
+    void fire(vector<vector<char>>& field, vector<GenericRobot*>& robots, ofstream& outfile);
     void revert() override;
+
 };
 
 //THIRTYSHOTBOT(shooting upgrade)-------------------------------------------------
