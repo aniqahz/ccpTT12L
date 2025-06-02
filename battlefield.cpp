@@ -8,6 +8,9 @@
 #include <sstream>
 #include <thread>
 #include <chrono>
+#include <fstream>
+#include <iostream>
+#include <cstdlib>
 
 using namespace std;
 
@@ -133,18 +136,30 @@ void processRespawn(vector<vector<char>>& field, ofstream& outfile) {
 
 void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vector<RobotSpawn>& robSpawn, vector<GenericRobot*>& robots) {
     auto replaceAllReferences = [&](GenericRobot* oldBot, GenericRobot* newBot) {
-        for (auto& robot : robots)
-            if (robot == oldBot)
-                robot = newBot;
-        for (auto& bot : activeRobots)
-            if (bot == oldBot)
-                bot = newBot;
-        for (auto& bot : revertNextTurn)
-            if (bot == oldBot)
-                bot = newBot;
-        for (auto& [pos, bot] : positionToRobot)
-            if (bot == oldBot)
-                bot = newBot;
+        for (auto& robot : robots) if (robot == oldBot) robot = nullptr;
+        for (auto& bot : activeRobots) if (bot == oldBot) bot = nullptr;
+        for (auto& bot : revertNextTurn) if (bot == oldBot) bot = nullptr;
+        for (auto& [pos, bot] : positionToRobot) if (bot == oldBot) bot = nullptr;
+        delete oldBot;
+
+      /*   for (auto& data : robSpawn) {
+            if (!data.spawned && steps + 1 == data.spawnTurn) {
+                auto [x, y] = data.robot->getPosition();
+                if (field[x][y] == '.') {
+                    field[x][y] = data.robot->getRobotName()[0];
+                    data.spawned = true;
+
+                    robots.push_back(data.robot);
+                    activeRobots.push_back(data.robot);
+                    positionToRobot[{x, y}] = data.robot;
+                    robotRespawnCount[data.robot] = 0;
+
+                    log(cout, outfile, data.robot->getRobotName() + " spawned at (" + to_string(x) + "," + to_string(y) + ")");
+                } else {
+                    log(cout, outfile, data.robot->getRobotName() + " failed to spawn (spot occupied)");
+                }
+            }
+        } */
 
         if (robotRespawnCount.count(oldBot)) {
             robotRespawnCount[newBot] = robotRespawnCount[oldBot];
@@ -209,17 +224,7 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
         // Apply upgrades
         for (auto& [oldBot, newBot] : replaceNextTurn) {
             replaceAllReferences(oldBot, newBot);
-            delete oldBot;
-
-            for (auto& robot : robots)
-                if (robot == oldBot)
-                    robot = nullptr;
-            for (auto& r : activeRobots)
-                if (r == oldBot)
-                    r = nullptr;
-            for (auto& r : revertNextTurn)
-                if (r == oldBot)
-                    r = nullptr;
+            //delete oldBot; // Clean up old bot memory
         }
         replaceNextTurn.clear();
 
@@ -246,11 +251,11 @@ void simulation(ofstream& outfile, vector<vector<char>>& field, int steps, vecto
             replaceAllReferences(upgraded, reverted);
             field[x][y] = reverted->getRobotName()[0];
 
-            revertCleanup.push_back(upgraded);
+           // revertCleanup.push_back(upgraded);
             log(cout, outfile, name + " reverted back to GenericRobot.");
         }
         revertNextTurn.clear();
-        for (auto* r : revertCleanup) delete r;
+        //for (auto* r : revertCleanup) delete r;
 
         // Respawns
         processRespawn(field, outfile);
